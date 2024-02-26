@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1010332530497",
+    "project_id": "mountainminder-6aed8",
+    "storage_bucket": "mountainminder-6aed8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010332530497:android:5af36e59f798c5299ad3c0",
+        "android_client_info": {
+          "package_name": "fr.isen.derkrikorian.skimouse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDn3tfslQvDZsEYGSPWPBb4VBPGPLsMKgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
