@@ -12,4 +12,7 @@
     <string name="CloseStatus">Fermé</string>
     <string name="UnknownStatus">Inconnu</string>
     <string name="Difficulty">Difficulté</string>
+    <string name="Color">Couleur</string>
+    <string name="Status">Etat</string>
+    <string name="LiftType">Type</string>
 </resources>

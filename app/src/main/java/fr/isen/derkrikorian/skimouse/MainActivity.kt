@@ -64,6 +64,7 @@ import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
@@ -200,6 +201,7 @@ fun TopBar() {
     var textState = remember { mutableStateOf(TextFieldValue()) }
     val navController = rememberNavController()
     val items = listOf("SlopeView", "LiftView")
+    var searchQuery by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -222,8 +224,8 @@ fun TopBar() {
                         .wrapContentWidth(align = Alignment.CenterHorizontally),
                         contentAlignment = Alignment.Center) {
                         BasicTextField(
-                            value = textState.value,
-                            onValueChange = { textState.value = it },
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
                             modifier = Modifier
                                 .padding(5.dp)
                                 .height(30.dp),
@@ -236,7 +238,7 @@ fun TopBar() {
                                     shape = MaterialTheme.shapes.small,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    if (textState.value.text.isEmpty()) {
+                                    if (searchQuery.isEmpty()) {
                                         Text("Search...", style = MaterialTheme.typography.titleLarge, color = Color.LightGray) // Placeholder text
                                     }
                                     innerTextField()
@@ -257,8 +259,8 @@ fun TopBar() {
         }
     ) {
         NavHost(navController, startDestination = items.first()) {
-            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
-            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
+            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp) , searchQuery = searchQuery) }
+            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp) , searchQuery = searchQuery) }
         }
     }
 }
@@ -266,7 +268,7 @@ fun TopBar() {
 
 
 @Composable
-fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues, searchQuery: String = "") {
     val slopes = remember { mutableStateListOf<Slope>() }
     val slopesReference = database.child("slopes")
 
@@ -288,7 +290,7 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
         })
     }
     LazyColumn(modifier = modifier.padding(innerPadding)) {
-        items(slopes) { slope ->
+        items(slopes.filter { it.name?.contains(searchQuery, ignoreCase = true) == true }) { slope ->
             val color = SlopeDifficulty.fromString(slope.color ?: "").color
             Log.d("Color", "Slope: ${slope.name} - ${slope.color}")
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
@@ -302,13 +304,15 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
                     Text(text = slope.name ?: "No name")
                     Spacer(modifier = Modifier.height(8.dp))
                     Row {
-                        Text(text = "Couleur: ")
+                        Text(text = stringResource(id = R.string.Color) + " : ")
                         Canvas(modifier = Modifier.size(20.dp)) {
                             drawCircle(color = color)
                         }
                     }
                 }
                 Text(text = slope.status?.let {
+                    Text(text = stringResource(id = R.string.Status) + " : ")
+                    Spacer(modifier = Modifier.width(8.dp))
                     if (it) stringResource(id = R.string.OpenStatus)
                     else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
             }
@@ -318,7 +322,7 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
 }
 
 @Composable
-fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues, searchQuery: String = "") {
     val lifts = remember { mutableStateListOf<Lift>() }
     val liftsReference = database.child("lifts")
 
@@ -340,7 +344,7 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
         })
     }
     LazyColumn(modifier = modifier.padding(innerPadding)) {
-        items(lifts) { lift ->
+        items(lifts.filter { it.name?.contains(searchQuery, ignoreCase = true) == true }) { lift ->
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
                 Image(
                     painter = painterResource(id = R.drawable.ski_lift),
@@ -349,11 +353,15 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = lift.name ?: "No name")
+                    Text(text = lift.name ?: stringResource(id = R.string.UnknownStatus))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = lift.type ?: "Unknown type")
+                    Text(text = stringResource(id = R.string.LiftType) + " : " + (lift.type ?: stringResource(id = R.string.UnknownStatus)))
                 }
-                Text(text = if (lift.status == true) "Open" else "Closed")
+                Text(text = lift.status?.let {
+                    Text(text = stringResource(id = R.string.Status) + " : ")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (it) stringResource(id = R.string.OpenStatus)
+                    else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
             }
             Divider(color = Color.Gray)
         }
