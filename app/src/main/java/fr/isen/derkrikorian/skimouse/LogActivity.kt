@@ -1,6 +1,10 @@
 package fr.isen.derkrikorian.skimouse
 
+import android.app.Activity
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -48,8 +52,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 
 class LogActivity : ComponentActivity() {
+
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -69,6 +79,13 @@ class LogActivity : ComponentActivity() {
 
 @Composable
 fun Greeting2(name: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    // Référence à FirebaseAuth
+    val auth = FirebaseAuth.getInstance()
+
     var isLogin by remember { mutableStateOf(true) }
     var passwordConfirmation by remember { mutableStateOf("") }
 
@@ -133,8 +150,8 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.Center
             ) {
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = email,
+                    onValueChange = { email = it },
                     label = { Text(text = stringResource(id = R.string.log_form1)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,8 +170,8 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 )
 
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = password,
+                    onValueChange = { password = it },
                     label = { Text(text = stringResource(id = R.string.log_form2)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -175,8 +192,8 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 if (!isLogin) {
                     // New OutlinedTextField for confirming password
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
+                        value = passwordConfirmation,
+                        onValueChange = { passwordConfirmation = it },
                         label = { Text(text = "Confirmer le mot de passe") }, // Provide appropriate label
                         modifier = Modifier
                             .fillMaxWidth()
@@ -194,7 +211,19 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 }
 
                 Button(
-                    onClick = { /* Handle login or signup based on isLoginScreen */ },
+                    onClick = {
+                        // Connexion à Firebase
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(context as Activity) { task ->
+                                if (task.isSuccessful) {
+                                    Log.d(TAG, "signInWithEmail:success")
+                                    // Redirigez l'utilisateur vers une autre activité, par exemple
+                                    // startActivity(Intent(context, NextActivity::class.java))
+                                } else {Log.w(TAG, "signInWithEmail:failure", task.exception)
+                                    Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                    },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(200.dp)
