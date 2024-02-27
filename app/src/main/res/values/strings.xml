@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">SkiMouse</string>
+    <string name="title_activity_log">LogActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="log_form1">Email</string>
+    <string name="log_form2">Mot de passe</string>
+    <string name="log_form3">Confirmation mot de passe</string>
+    <string name="Boutton_log">Connexion</string>
+    <string name="Boutton_sign">S\'inscrire</string>
+    <string name="logo_title">Mountain Minder</string>
 </resources>
