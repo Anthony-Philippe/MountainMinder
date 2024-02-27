@@ -5,6 +5,7 @@
     <string name="log_form1">Email</string>
     <string name="log_form2">Mot de passe</string>
     <string name="log_form3">Confirmation mot de passe</string>
+    <string name="log_form4">Commentaire</string>
     <string name="Boutton_log">Connexion</string>
     <string name="Boutton_sign">S\'inscrire</string>
     <string name="logo_title">Mountain Minder</string>
@@ -12,6 +13,12 @@
     <string name="CloseStatus">Fermé</string>
     <string name="UnknownStatus">Inconnu</string>
     <string name="Difficulty">Difficulté</string>
+    <string name="Color">Couleur</string>
+    <string name="Status">Etat</string>
+    <string name="LiftType">Type</string>
+    <string name="SearchPlaceholder">Recherchez</string>
+    <string name="ShowAll">Tout afficher</string>
+    <string name="ShowOpen">Afficher ouvert</string>
     <string name="title_activity_detail">DetailActivity</string>
     <string name="title_activity_detail_slope">DetailActivitySlope</string>
 </resources>

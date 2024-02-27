@@ -150,64 +150,32 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Center
             ) {
-                OutlinedTextField(
+                CustomOutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text(text = stringResource(id = R.string.log_form1)) },
+                    labelId = R.string.log_form1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedTextColor = colorResource(id =R.color.grey),
-                        unfocusedBorderColor =colorResource(id =R.color.orange),
-                        unfocusedLabelColor = colorResource(id =R.color.grey),
-                        unfocusedLeadingIconColor = colorResource(id =R.color.orange),
-                        focusedBorderColor = colorResource(id =R.color.orange),
-                        unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
-
-                    ),
-
                 )
-
-                OutlinedTextField(
+                CustomOutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text(text = stringResource(id = R.string.log_form2)) },
+                    labelId = R.string.log_form2,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-
-                    shape = RoundedCornerShape(20.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedTextColor = colorResource(id =R.color.orange),
-                        unfocusedBorderColor =colorResource(id =R.color.orange),
-                        unfocusedLabelColor = colorResource(id =R.color.grey),
-                        unfocusedLeadingIconColor = colorResource(id =R.color.orange),
-                        focusedBorderColor = colorResource(id =R.color.orange),
-                        unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
-
-                        ),
                 )
 
                 if (!isLogin) {
                     // New OutlinedTextField for confirming password
-                    OutlinedTextField(
+                    CustomOutlinedTextField(
                         value = passwordConfirmation,
                         onValueChange = { passwordConfirmation = it },
-                        label = { Text(text = "Confirmer le mot de passe") }, // Provide appropriate label
+                        labelId = R.string.log_form3,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedTextColor = colorResource(id = R.color.orange),
-                            unfocusedBorderColor = colorResource(id = R.color.orange),
-                            unfocusedLabelColor = colorResource(id = R.color.grey),
-                            unfocusedLeadingIconColor = colorResource(id = R.color.orange),
-                            focusedBorderColor = colorResource(id = R.color.orange),
-                            unfocusedContainerColor = colorResource(id = R.color.orange).copy(alpha = 0.2f),
-                        )
                     )
                 }
 

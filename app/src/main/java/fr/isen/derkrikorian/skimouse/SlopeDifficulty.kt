@@ -2,12 +2,12 @@ package fr.isen.derkrikorian.skimouse
 
 import androidx.compose.ui.graphics.Color
 
-enum class SlopeDifficulty(val color: Color) {
-    BLACK(Color.Black),
-    BLUE(Color.Blue),
-    RED(Color.Red),
-    GREEN(Color.Green),
-    UNKNOWN(Color.Gray);
+enum class SlopeDifficulty(val color: Color, val value: Int) {
+    GREEN(Color.Green, 1),
+    BLUE(Color.Blue, 2),
+    RED(Color.Red, 3),
+    BLACK(Color.Black, 4),
+    UNKNOWN(Color.Gray, 5);
 
     companion object {
         fun fromString(difficulty: String): SlopeDifficulty {
@@ -27,6 +27,15 @@ enum class SlopeDifficulty(val color: Color) {
                 "red" -> R.drawable.ski_stickman_r
                 "black" -> R.drawable.ski_stickman_black
                 else -> R.drawable.ski_stickman_black
+            }
+        }
+        fun getRabbitImageResource(slopeColor: String?): Int {
+            return when (slopeColor) {
+                "#00ff00" -> R.drawable.lapingreen
+                "#0000ff" -> R.drawable.lapinblue
+                "#ff0000" -> R.drawable.lapinred
+                "#000000" -> R.drawable.lapinblack
+                else -> R.drawable.lapinblack
             }
         }
     }
