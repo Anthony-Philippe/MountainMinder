@@ -58,11 +58,16 @@ class DetailActivitySlope : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Récupérer les données transmises depuis l'intent
+   //slope
         val slopeName = intent.getStringExtra("slope_name") ?: ""
         val slopeColorString = intent.getStringExtra("slope_color") ?: ""
         val isOpen = intent.getBooleanExtra("is_open", false)
-        val slopeColorRabbit = intent.getStringExtra("slope_color") ?: ""
+
+        //Lift
+        val itemType = intent.getStringExtra("item_type")
+        val liftName = intent.getStringExtra("lift_name") ?: ""
+        val liftType = intent.getStringExtra("lift_status") ?: ""
+        val liftisOpen = intent.getBooleanExtra("lift_is_open", false)
 
         val slopeColor = if (slopeColorString.isNotEmpty()) {
             parseColor(slopeColorString)
@@ -77,11 +82,18 @@ class DetailActivitySlope : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SlopeDetails(
-                        name = slopeName,
-                        color = slopeColor,
-                        isOpen = isOpen,
-                    )
+                    if(itemType == "lift") {
+                        LiftDetails(
+                            name = liftName,
+                            type = liftType,
+                            liftisOpen = liftisOpen)
+                    } else {
+                        SlopeDetails(
+                            name = slopeName,
+                            color = slopeColor,
+                            isOpen = isOpen,
+                        )
+                    }
                 }
 
             }
@@ -247,7 +259,11 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     .fillMaxWidth()
                     .height(100.dp)
                     .padding(10.dp)
-                    .border(1.dp, colorResource(id = R.color.grey),  shape = RoundedCornerShape(20.dp))
+                    .border(
+                        1.dp,
+                        colorResource(id = R.color.grey),
+                        shape = RoundedCornerShape(20.dp)
+                    )
                     .clip(RoundedCornerShape(20.dp))
                     .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
 
@@ -261,6 +277,189 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     )
                     Text(
                         text = "Avis sur la piste",
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+            }
+
+        }
+    }
+
+}
+
+
+
+@Composable
+fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modifier = Modifier) {
+    var commentaire by remember { mutableStateOf("") }
+
+    var note: Int by remember { mutableStateOf(0) }
+    var open = ""
+    if(liftisOpen == true) {
+        open = "Ouverte"
+    } else {
+        open = "Fermée"
+    }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Slope Image",
+            modifier = Modifier.size(100.dp)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.profil),
+            contentDescription = "Profile Image",
+            modifier = Modifier.size(70.dp)
+        )
+
+    }
+    LazyColumn(
+        modifier = modifier.padding(top = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "$name",
+                    fontSize = 40.sp
+                )
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                            Text(
+                                text = "Type : $type ",
+                                fontSize = 25.sp
+                            )
+
+                    Text(
+                        text = "Etat: ${if (liftisOpen) "Ouverte" else "Fermée"}",
+                        fontSize = 25.sp
+                    )
+                }
+                Row(
+                    modifier = Modifier.padding(end = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.liftrabbit),
+                        contentDescription = "Rabbit Image",
+                        modifier = Modifier.size(175.dp)
+                    )
+                }
+
+            }
+        }
+        item {
+            Text(
+                text = "Est-ce que la remontée : $name est toujours $open ?",
+                fontSize = 25.sp,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center,
+
+                )
+            Row( modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Button(onClick = { /*TODO*/ }) {
+                    Text(text = "Ouverte")
+                }
+                Button(onClick = { /*TODO*/ }) {
+                    Text(text = "Fermée")
+                }
+            }
+        }
+        item{
+            Text(text = "Afficher la liste des piste", fontSize = 25.sp, modifier = Modifier.padding(8.dp), textAlign = TextAlign.Center)
+        }
+        item {
+            Text(
+                text ="Notez la remontée",
+                fontSize = 25.sp,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val jauneColor = Color(R.color.jaune)
+                repeat(5) { index ->
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (index < note) Color.Blue else Color.LightGray,
+                        modifier = Modifier
+                            .clickable {
+                                note = index + 1
+                            }
+                            .padding(4.dp)
+                            .size(40.dp)
+                    )
+                }
+
+            }
+            OutlinedTextField(
+                value = commentaire,
+                onValueChange = { commentaire = it },
+                label = { Text(text = stringResource(id = R.string.log_form4)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(10.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedTextColor = colorResource(id =R.color.grey),
+                    unfocusedBorderColor = colorResource(id =R.color.grey),
+                    unfocusedLabelColor = colorResource(id =R.color.grey),
+                    unfocusedLeadingIconColor = colorResource(id =R.color.grey),
+                    focusedBorderColor = colorResource(id =R.color.grey),
+                    unfocusedContainerColor = colorResource(id =R.color.grey).copy(alpha = 0.2f),
+
+                    ),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(10.dp)
+                    .border(
+                        1.dp,
+                        colorResource(id = R.color.grey),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
+
+                ) {
+                Column {
+                    Text(
+                        text = "Nom user",
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Avis sur la remontée",
                         fontSize = 15.sp,
                         textAlign = TextAlign.Center
                     )
