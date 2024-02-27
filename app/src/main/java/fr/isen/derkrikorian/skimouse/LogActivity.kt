@@ -52,14 +52,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
-import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.ktx.database
 
 class LogActivity : ComponentActivity() {
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,15 +84,14 @@ class LogActivity : ComponentActivity() {
 
 @Composable
 fun Greeting2(name: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    // Référence à FirebaseAuth
     val auth = FirebaseAuth.getInstance()
-
     var isLogin by remember { mutableStateOf(true) }
     var passwordConfirmation by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+
 
     Column(
         modifier = Modifier
@@ -159,13 +162,13 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         .padding(bottom = 8.dp),
                     shape = RoundedCornerShape(20.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedTextColor = colorResource(id =R.color.grey),
+                        unfocusedTextColor = colorResource(id =R.color.orange),
                         unfocusedBorderColor =colorResource(id =R.color.orange),
-                        unfocusedLabelColor = colorResource(id =R.color.grey),
+                        unfocusedLabelColor = colorResource(id =R.color.orange),
                         unfocusedLeadingIconColor = colorResource(id =R.color.orange),
                         focusedBorderColor = colorResource(id =R.color.orange),
                         unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
-
+                        focusedLabelColor = colorResource(id =R.color.orange),
                     ),
 
                 )
@@ -182,11 +185,11 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedTextColor = colorResource(id =R.color.orange),
                         unfocusedBorderColor =colorResource(id =R.color.orange),
-                        unfocusedLabelColor = colorResource(id =R.color.grey),
+                        unfocusedLabelColor = colorResource(id =R.color.orange),
                         unfocusedLeadingIconColor = colorResource(id =R.color.orange),
                         focusedBorderColor = colorResource(id =R.color.orange),
                         unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
-
+                        focusedLabelColor = colorResource(id =R.color.orange),
                         ),
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -204,11 +207,11 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedTextColor = colorResource(id = R.color.orange),
                             unfocusedBorderColor = colorResource(id = R.color.orange),
-                            unfocusedLabelColor = colorResource(id = R.color.grey),
+                            unfocusedLabelColor = colorResource(id = R.color.orange),
                             unfocusedLeadingIconColor = colorResource(id = R.color.orange),
                             focusedBorderColor = colorResource(id = R.color.orange),
                             unfocusedContainerColor = colorResource(id = R.color.orange).copy(alpha = 0.2f),
-                        ),
+                            focusedLabelColor = colorResource(id =R.color.orange),),
                         visualTransformation = PasswordVisualTransformation()
                     )
                 }
@@ -221,6 +224,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                 .addOnCompleteListener(context as Activity) { task ->
                                     if (task.isSuccessful) {
                                         Log.d(TAG, "signInWithEmail:success")
+
                                         // Redirect user to another activity
                                     } else {
                                         Log.w(TAG, "signInWithEmail:failure", task.exception)
@@ -233,7 +237,20 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                 auth.createUserWithEmailAndPassword(email, password)
                                     .addOnCompleteListener(context as Activity) { task ->
                                         if (task.isSuccessful) {
+                                            val user = auth.currentUser
                                             Log.d(TAG, "createUserWithEmail:success")
+
+                                            user?.uid?.let { uid ->
+                                                val database = Firebase.database
+                                                val usersRef = database.getReference("users")
+                                                val userData = mapOf(
+                                                    "email" to email,
+                                                    "uid" to uid,
+                                                    // Add more user data fields as needed
+                                                )
+                                                usersRef.child(uid).setValue(userData)
+                                            }
+
                                             // Redirect user to another activity
                                         } else {
                                             Log.w(TAG, "createUserWithEmail:failure", task.exception)
