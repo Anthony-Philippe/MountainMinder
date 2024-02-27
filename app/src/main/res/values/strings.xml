@@ -16,4 +16,6 @@
     <string name="Status">Etat</string>
     <string name="LiftType">Type</string>
     <string name="SearchPlaceholder">Recherchez</string>
+    <string name="ShowAll">Tout afficher</string>
+    <string name="ShowOpen">Afficher ouvert</string>
 </resources>

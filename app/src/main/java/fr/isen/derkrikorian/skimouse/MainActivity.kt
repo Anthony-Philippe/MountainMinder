@@ -248,7 +248,7 @@ fun TopBar() {
                     colors = ButtonDefaults.buttonColors(colorResource(id =R.color.orange)) // Set the background color to dark blue
                 ) {
                     Text(
-                        text = if (showOpenOnly) "Show All" else "Show Open Only",
+                        text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(R.string.ShowOpen),
                         style = button,
                     )
                 }
@@ -282,6 +282,7 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
                         slopes.add(slope)
                     }
                 }
+                slopes.sortBy { SlopeDifficulty.fromString(it.color ?: "").value }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
