@@ -5,6 +5,7 @@
     <string name="log_form1">Email</string>
     <string name="log_form2">Mot de passe</string>
     <string name="log_form3">Confirmation mot de passe</string>
+    <string name="log_form4">Commentaire</string>
     <string name="Boutton_log">Connexion</string>
     <string name="Boutton_sign">S\'inscrire</string>
     <string name="logo_title">Mountain Minder</string>

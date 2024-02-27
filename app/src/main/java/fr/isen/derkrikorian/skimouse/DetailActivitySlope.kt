@@ -8,7 +8,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.Row
@@ -20,20 +24,35 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.ui.text.style.TextAlign
+
+
 
 class DetailActivitySlope : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +93,9 @@ fun parseColor(colorString: String): Color {
 }
 @Composable
 fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier) {
+    var commentaire by remember { mutableStateOf("") }
     val colorHex = "#${Integer.toHexString(color.toArgb()).substring(2)}"
+    var note: Int by remember { mutableStateOf(0) }
     var open = ""
     if(isOpen == true) {
         open = "Ouverte"
@@ -173,7 +194,79 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     Text(text = "Fermée")
                 }
             }
+        }
+        item {
+            Text(
+                text ="Notez la piste",
+                fontSize = 25.sp,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val jauneColor = Color(R.color.jaune)
+                repeat(5) { index ->
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (index < note) Color.Blue else Color.LightGray,
+                        modifier = Modifier
+                            .clickable {
+                                note = index + 1
+                            }
+                            .padding(4.dp)
+                            .size(40.dp)
+                    )
+                }
 
+            }
+            OutlinedTextField(
+                value = commentaire,
+                onValueChange = { commentaire = it },
+                label = { Text(text = stringResource(id = R.string.log_form4)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(10.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedTextColor = colorResource(id =R.color.grey),
+                    unfocusedBorderColor = colorResource(id =R.color.grey),
+                    unfocusedLabelColor = colorResource(id =R.color.grey),
+                    unfocusedLeadingIconColor = colorResource(id =R.color.grey),
+                    focusedBorderColor = colorResource(id =R.color.grey),
+                    unfocusedContainerColor = colorResource(id =R.color.grey).copy(alpha = 0.2f),
+
+                    ),
+                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(10.dp)
+                    .border(1.dp, colorResource(id = R.color.grey),  shape = RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
+
+            ) {
+                Column {
+                    Text(
+                        text = "Nom user",
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Avis sur la piste",
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+            }
 
         }
     }
