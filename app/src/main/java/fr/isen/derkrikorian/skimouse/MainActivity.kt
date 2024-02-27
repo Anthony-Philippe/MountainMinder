@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -64,7 +65,10 @@ import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
@@ -205,54 +209,31 @@ fun TopBar() {
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            Row(
                 modifier = Modifier
                     .height(80.dp)
-                    .padding(top = 35.dp), //crease the top padding to lower the bar
-                navigationIcon = {
-                    Image(
-                        painter = logo,
-                        contentDescription = "Logo",
-                        modifier = Modifier
-                            .size(55.dp)
-                    )
-                },
-                title = {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .border(2.dp, Color(0xFFFFA500), MaterialTheme.shapes.small)
-                        .wrapContentWidth(align = Alignment.CenterHorizontally),
-                        contentAlignment = Alignment.Center) {
-                        BasicTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .height(30.dp),
-                            singleLine = true,
-                            textStyle = MaterialTheme.typography.titleLarge,
-                            cursorBrush = SolidColor(Color.Black),
-                            decorationBox = { innerTextField ->
-                                Surface(
-                                    color = Color.White,
-                                    shape = MaterialTheme.shapes.small,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    if (searchQuery.isEmpty()) {
-                                        Text("Search...", style = MaterialTheme.typography.titleLarge, color = Color.LightGray) // Placeholder text
-                                    }
-                                    innerTextField()
-                                }
-                            }
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Handle profile icon press */ }) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile Icon" , modifier = Modifier.size(60.dp))
-                    }
-                },
-            )
+                    .padding(top = 20.dp)
+                    .fillMaxWidth()
+            ) {
+                Image(
+                    painter = logo,
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .align(Alignment.CenterVertically)
+                )
+                CustomOutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    labelId = R.string.SearchPlaceholder,
+                    searchbar = true,
+                    modifier = Modifier
+                        .weight(1f)
+                )
+                IconButton(onClick = { /* Handle profile icon press */ }, modifier = Modifier.align(Alignment.CenterVertically)) {
+                    Icon(Icons.Default.Person, contentDescription = "Profile Icon" , modifier = Modifier.size(60.dp))
+                }
+            }
         },
         bottomBar = {
             BottomBar(navController = navController)

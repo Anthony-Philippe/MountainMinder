@@ -15,4 +15,5 @@
     <string name="Color">Couleur</string>
     <string name="Status">Etat</string>
     <string name="LiftType">Type</string>
+    <string name="SearchPlaceholder">Recherchez</string>
 </resources>
