@@ -2,6 +2,7 @@ package fr.isen.derkrikorian.skimouse
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -9,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -62,6 +64,7 @@ import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
@@ -190,7 +193,7 @@ fun TopBar() {
             TopAppBar(
                 modifier = Modifier
                     .height(80.dp)
-                    .padding(top = 35.dp), //crease the top padding to lower the bar
+                    .padding(top = 35.dp),
                 navigationIcon = {
                     Image(
                         painter = logo,
@@ -251,7 +254,7 @@ fun TopBar() {
 @Composable
 fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
     val slopeList = remember { mutableStateListOf<Slope>() }
-
+    val context = LocalContext.current
     val slopesReference = database.child("slopes")
 
     LaunchedEffect(slopesReference) {
@@ -275,7 +278,17 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
     LazyColumn(modifier = modifier.padding(innerPadding)) {
         items(slopeList) { slope ->
             val color = Color(android.graphics.Color.parseColor(slope.color ?: ""))
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        val intent = Intent(context, DetailActivitySlope::class.java)
+                        intent.putExtra("slope_name", slope.name)
+                        intent.putExtra("slope_color", slope.color ?: "") // Ajoutez la couleur de la piste
+                        intent.putExtra("is_open", slope.status ?: false) // Ajoutez l'état de la piste
+                        context.startActivity(intent)
+                    }
+            ) {
                 Image(
                     painter = painterResource(id = getSlopeImageResource(slope.color)),
                     contentDescription = "Slope",
