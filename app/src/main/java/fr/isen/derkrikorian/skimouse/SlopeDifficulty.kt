@@ -29,5 +29,14 @@ enum class SlopeDifficulty(val color: Color, val value: Int) {
                 else -> R.drawable.ski_stickman_black
             }
         }
+        fun getRabbitImageResource(slopeColor: String?): Int {
+            return when (slopeColor) {
+                "#00ff00" -> R.drawable.lapingreen
+                "#0000ff" -> R.drawable.lapinblue
+                "#ff0000" -> R.drawable.lapinred
+                "#000000" -> R.drawable.lapinblack
+                else -> R.drawable.lapinblack
+            }
+        }
     }
 }
