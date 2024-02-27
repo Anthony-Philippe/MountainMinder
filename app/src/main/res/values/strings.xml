@@ -12,4 +12,5 @@
     <string name="CloseStatus">Fermé</string>
     <string name="UnknownStatus">Inconnu</string>
     <string name="Difficulty">Difficulté</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>

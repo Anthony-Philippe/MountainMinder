@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +48,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -67,6 +65,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
+import fr.isen.touret.skimouse.Slope
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -123,18 +122,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-data class User(
-    var firstName: String? = "",
-    var lastName: String? = "",
-    var born: Int? = 0
-)
 
-data class Lift(
-    var comment: String? = null,
-    var name: String? = "",
-    var status: Boolean? = false,
-    var type: String? = ""
-)
+
 
 enum class LiftType {
     TELECABINE,
@@ -143,12 +132,7 @@ enum class LiftType {
     TAPIS,
 }
 
-data class Slope(
-    var comment: String? = null,
-    var name: String? = "",
-    var status: Boolean? = false,
-    var color: String? = ""
-)
+
 
 @Composable
 fun BottomBar(navController: NavController){
@@ -264,20 +248,20 @@ fun TopBar() {
 }
 
 
-
 @Composable
-fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
-    val slopes = remember { mutableStateListOf<Slope>() }
+fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+    val slopeList = remember { mutableStateListOf<Slope>() }
+
     val slopesReference = database.child("slopes")
 
     LaunchedEffect(slopesReference) {
         slopesReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                slopes.clear()
+                slopeList.clear()
                 for (slopeSnapshot in dataSnapshot.children) {
                     val slope = slopeSnapshot.getValue(Slope::class.java)
                     if (slope != null) {
-                        slopes.add(slope)
+                        slopeList.add(slope)
                     }
                 }
             }
@@ -287,10 +271,10 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
             }
         })
     }
+
     LazyColumn(modifier = modifier.padding(innerPadding)) {
-        items(slopes) { slope ->
-            val color = SlopeDifficulty.fromString(slope.color ?: "").color
-            Log.d("Color", "Slope: ${slope.name} - ${slope.color}")
+        items(slopeList) { slope ->
+            val color = Color(android.graphics.Color.parseColor(slope.color ?: ""))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
                 Image(
                     painter = painterResource(id = getSlopeImageResource(slope.color)),
@@ -308,9 +292,12 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
                         }
                     }
                 }
-                Text(text = slope.status?.let {
-                    if (it) stringResource(id = R.string.OpenStatus)
-                    else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
+                Text(
+                    text = slope.status?.let {
+                        if (it) stringResource(id = R.string.OpenStatus)
+                        else stringResource(id = R.string.CloseStatus)
+                    } ?: stringResource(id = R.string.UnknownStatus)
+                )
             }
             Divider(color = Color.Gray)
         }
