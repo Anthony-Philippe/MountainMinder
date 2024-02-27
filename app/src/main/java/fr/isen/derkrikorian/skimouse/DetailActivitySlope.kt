@@ -65,7 +65,7 @@ fun parseColor(colorString: String): Color {
 fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier) {
     Row {
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            painter = painterResource(id = R.drawable.logo),
             contentDescription = "Slope Image",
             modifier = Modifier.size(100.dp)
         )
