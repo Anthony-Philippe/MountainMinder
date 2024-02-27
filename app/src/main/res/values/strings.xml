@@ -8,4 +8,8 @@
     <string name="Boutton_log">Connexion</string>
     <string name="Boutton_sign">S\'inscrire</string>
     <string name="logo_title">Mountain Minder</string>
+    <string name="OpenStatus">Ouvert</string>
+    <string name="CloseStatus">Fermé</string>
+    <string name="UnknownStatus">Inconnu</string>
+    <string name="Difficulty">Difficulté</string>
 </resources>

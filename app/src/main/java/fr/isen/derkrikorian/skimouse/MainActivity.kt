@@ -64,7 +64,9 @@ import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
+import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -152,14 +154,30 @@ data class Slope(
 fun BottomBar(navController: NavController){
     val items = listOf("SlopeView", "LiftView")
 
-    BottomNavigation {
+    BottomNavigation(
+        backgroundColor = Color.White // Set the background color to white
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
 
-        items.forEach { screen ->
+        items.forEachIndexed { index, screen ->
             BottomNavigationItem(
-                icon = { Icon(Icons.Default.Home, contentDescription = null) }, // Replace with your own icons
-                label = { Text(screen) },
+                icon = {
+                    // Use icons instead of text
+                    if (index == 0) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ski_stickman_black),
+                            contentDescription = "Slope",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.ski_lift),
+                            contentDescription = "Lifts",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                },
                 selected = currentRoute == screen,
                 onClick = {
                     navController.navigate(screen) {
@@ -239,8 +257,8 @@ fun TopBar() {
         }
     ) {
         NavHost(navController, startDestination = items.first()) {
-            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp)) }
-            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp)) }
+            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
+            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
         }
     }
 }
@@ -275,7 +293,7 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
             Log.d("Color", "Slope: ${slope.name} - ${slope.color}")
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
                 Image(
-                    painter = painterResource(id = R.drawable.ski_stickman_black),
+                    painter = painterResource(id = getSlopeImageResource(slope.color)),
                     contentDescription = "Slope",
                     modifier = Modifier.size(40.dp)
                 )
@@ -284,13 +302,15 @@ fun SlopeView(database : DatabaseReference, modifier: Modifier = Modifier, inner
                     Text(text = slope.name ?: "No name")
                     Spacer(modifier = Modifier.height(8.dp))
                     Row {
-                        Text(text = "Difficulty: ")
+                        Text(text = "Couleur: ")
                         Canvas(modifier = Modifier.size(20.dp)) {
                             drawCircle(color = color)
                         }
                     }
                 }
-                Text(text = slope.status?.let { if (it) "Open" else "Closed" } ?: "Unknown")
+                Text(text = slope.status?.let {
+                    if (it) stringResource(id = R.string.OpenStatus)
+                    else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
             }
             Divider(color = Color.Gray)
         }

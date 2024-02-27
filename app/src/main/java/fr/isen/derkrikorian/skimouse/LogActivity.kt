@@ -218,7 +218,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                             .addOnCompleteListener(context as Activity) { task ->
                                 if (task.isSuccessful) {
                                     Log.d(TAG, "signInWithEmail:success")
-                                    // Redirect the user to MainActivity
                                     val intent = Intent(context, MainActivity::class.java)
                                     context.startActivity(intent)
                                 } else {
