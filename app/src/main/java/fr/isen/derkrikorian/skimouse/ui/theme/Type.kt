@@ -8,6 +8,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.R
 
+val button = TextStyle(
+    fontFamily = FontFamily(Font(R.font.spicy_rice)),
+    fontWeight = FontWeight.W500,
+    fontSize = 12.sp,
+    letterSpacing = 1.25.sp
+)
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
@@ -16,9 +22,11 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
-    )
+    ),
     // Add other text styles here and replace `FontFamily.Default` with `FontFamily(Font(R.font.spicy_rice))`
 )
+    // Add other text styles here and replace `FontFamily.Default` with `FontFamily(Font(R.font.spicy_rice))`
+
     /* Other default text styles to override
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
