@@ -2,6 +2,7 @@ package fr.isen.derkrikorian.skimouse
 
 import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -217,9 +218,10 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                             .addOnCompleteListener(context as Activity) { task ->
                                 if (task.isSuccessful) {
                                     Log.d(TAG, "signInWithEmail:success")
-                                    // Redirigez l'utilisateur vers une autre activité, par exemple
-                                    // startActivity(Intent(context, NextActivity::class.java))
-                                } else {Log.w(TAG, "signInWithEmail:failure", task.exception)
+                                    val intent = Intent(context, MainActivity::class.java)
+                                    context.startActivity(intent)
+                                } else {
+                                    Log.w(TAG, "signInWithEmail:failure", task.exception)
                                     Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
                                 }
                             }
