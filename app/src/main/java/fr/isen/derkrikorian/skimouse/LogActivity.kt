@@ -55,6 +55,7 @@ import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 class LogActivity : ComponentActivity() {
 
@@ -187,6 +188,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
 
                         ),
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 if (!isLogin) {
@@ -206,23 +208,42 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                             unfocusedLeadingIconColor = colorResource(id = R.color.orange),
                             focusedBorderColor = colorResource(id = R.color.orange),
                             unfocusedContainerColor = colorResource(id = R.color.orange).copy(alpha = 0.2f),
-                        )
+                        ),
+                        visualTransformation = PasswordVisualTransformation()
                     )
                 }
 
                 Button(
                     onClick = {
-                        // Connexion à Firebase
-                        auth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(context as Activity) { task ->
-                                if (task.isSuccessful) {
-                                    Log.d(TAG, "signInWithEmail:success")
-                                    // Redirigez l'utilisateur vers une autre activité, par exemple
-                                    // startActivity(Intent(context, NextActivity::class.java))
-                                } else {Log.w(TAG, "signInWithEmail:failure", task.exception)
-                                    Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                        if (isLogin) {
+                            // Handle login
+                            auth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(context as Activity) { task ->
+                                    if (task.isSuccessful) {
+                                        Log.d(TAG, "signInWithEmail:success")
+                                        // Redirect user to another activity
+                                    } else {
+                                        Log.w(TAG, "signInWithEmail:failure", task.exception)
+                                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
+                        } else {
+                            // Handle registration
+                            if (password == passwordConfirmation) {
+                                auth.createUserWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener(context as Activity) { task ->
+                                        if (task.isSuccessful) {
+                                            Log.d(TAG, "createUserWithEmail:success")
+                                            // Redirect user to another activity
+                                        } else {
+                                            Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                                            Toast.makeText(context, "Registration failed.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                            } else {
+                                Toast.makeText(context, "Passwords do not match.", Toast.LENGTH_SHORT).show()
                             }
+                        }
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
