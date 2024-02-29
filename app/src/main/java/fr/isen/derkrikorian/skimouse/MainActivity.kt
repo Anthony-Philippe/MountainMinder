@@ -197,7 +197,10 @@ fun TopBar() {
                 Spacer(modifier = Modifier.height(16.dp))
                 IconButton(onClick = { scope.launch { drawerState.close() } }
                 ) {
-                    Icon(imageVector = Icons.Outlined.Close, contentDescription = "Profile Icon")
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Profile Icon"
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 TextButton(onClick = { }) {
