@@ -26,31 +26,45 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -61,14 +75,11 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
+import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import fr.isen.touret.skimouse.Slope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -126,8 +137,6 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
 enum class LiftType {
     TELECABINE,
     TELESIEGE,
@@ -136,9 +145,8 @@ enum class LiftType {
 }
 
 
-
 @Composable
-fun BottomBar(navController: NavController){
+fun BottomBar(navController: NavController) {
     val items = listOf("SlopeView", "LiftView")
 
     BottomNavigation(
@@ -178,7 +186,6 @@ fun BottomBar(navController: NavController){
 }
 
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @ExperimentalMaterial3Api
@@ -187,72 +194,131 @@ fun TopBar() {
     var textState = remember { mutableStateOf(TextFieldValue()) }
     val navController = rememberNavController()
     val items = listOf("SlopeView", "LiftView")
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                modifier = Modifier
-                    .height(80.dp)
-                    .padding(top = 35.dp),
-                navigationIcon = {
-                    Image(
-                        painter = logo,
-                        contentDescription = "Logo",
-                        modifier = Modifier
-                            .size(55.dp)
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(modifier = Modifier.height(16.dp))
+                IconButton(onClick = { scope.launch { drawerState.close() } }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Profile Icon"
                     )
-                },
-                title = {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .border(2.dp, Color(0xFFFFA500), MaterialTheme.shapes.small)
-                        .wrapContentWidth(align = Alignment.CenterHorizontally),
-                        contentAlignment = Alignment.Center) {
-                        BasicTextField(
-                            value = textState.value,
-                            onValueChange = { textState.value = it },
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .height(30.dp),
-                            singleLine = true,
-                            textStyle = MaterialTheme.typography.titleLarge,
-                            cursorBrush = SolidColor(Color.Black),
-                            decorationBox = { innerTextField ->
-                                Surface(
-                                    color = Color.White,
-                                    shape = MaterialTheme.shapes.small,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    if (textState.value.text.isEmpty()) {
-                                        Text("Search...", style = MaterialTheme.typography.titleLarge, color = Color.LightGray) // Placeholder text
-                                    }
-                                    innerTextField()
-                                }
-                            }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = {
+
+                }) {
+                    Text(
+                        "Logout", modifier = Modifier.padding(16.dp), style = TextStyle(
+                            color = Color(0xFFFFA500),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Handle profile icon press */ }) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile Icon" , modifier = Modifier.size(60.dp))
-                    }
-                },
-            )
+                    )
+                }
+            }
         },
-        bottomBar = {
-            BottomBar(navController = navController)
-        }
+        drawerState = drawerState,
+        gesturesEnabled = true
     ) {
-        NavHost(navController, startDestination = items.first()) {
-            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
-            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)) }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier
+                        .height(80.dp)
+                        .padding(top = 35.dp),
+                    navigationIcon = {
+                        Image(
+                            painter = logo,
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .size(55.dp)
+                        )
+                    },
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(2.dp, Color(0xFFFFA500), MaterialTheme.shapes.small)
+                                .wrapContentWidth(align = Alignment.CenterHorizontally),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            BasicTextField(
+                                value = textState.value,
+                                onValueChange = { textState.value = it },
+                                modifier = Modifier
+                                    .padding(5.dp)
+                                    .height(30.dp),
+                                singleLine = true,
+                                textStyle = MaterialTheme.typography.titleLarge,
+                                cursorBrush = SolidColor(Color.Black),
+                                decorationBox = { innerTextField ->
+                                    Surface(
+                                        color = Color.White,
+                                        shape = MaterialTheme.shapes.small,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        if (textState.value.text.isEmpty()) {
+                                            Text(
+                                                "Search...",
+                                                style = MaterialTheme.typography.titleLarge,
+                                                color = Color.LightGray
+                                            ) // Placeholder text
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            scope.launch {
+                                drawerState.open()
+                            }
+                        }) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Profile Icon",
+                                modifier = Modifier.size(60.dp)
+                            )
+                        }
+                    },
+                )
+            },
+            bottomBar = {
+                BottomBar(navController = navController)
+            }
+        ) {
+            NavHost(navController, startDestination = items.first()) {
+                composable("SlopeView") {
+                    SlopeView(
+                        database = FirebaseDatabase.getInstance().reference,
+                        innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)
+                    )
+                }
+                composable("LiftView") {
+                    LiftView(
+                        database = FirebaseDatabase.getInstance().reference,
+                        innerPadding = PaddingValues(top = 85.dp, bottom = 75.dp)
+                    )
+                }
+            }
         }
     }
 }
 
 
 @Composable
-fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun SlopeView(
+    database: DatabaseReference,
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues
+) {
     val slopeList = remember { mutableStateListOf<Slope>() }
     val context = LocalContext.current
     val slopesReference = database.child("slopes")
@@ -318,7 +384,11 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
 }
 
 @Composable
-fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues) {
+fun LiftView(
+    database: DatabaseReference,
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues
+) {
     val lifts = remember { mutableStateListOf<Lift>() }
     val liftsReference = database.child("lifts")
     val context = LocalContext.current
@@ -348,7 +418,7 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
                         val intent = Intent(context, DetailActivitySlope::class.java)
                         intent.putExtra("item_type", "lift")
                         intent.putExtra("lift_name", lift.name)
-                        intent.putExtra("lift_type", lift.type )
+                        intent.putExtra("lift_type", lift.type)
                         intent.putExtra("lift_is_open", lift.status ?: false)
                         context.startActivity(intent)
                     }) {

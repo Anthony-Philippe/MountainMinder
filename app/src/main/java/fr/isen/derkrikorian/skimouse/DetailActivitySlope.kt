@@ -1,9 +1,6 @@
 package fr.isen.derkrikorian.skimouse
 
-import android.media.Image
-import androidx.compose.ui.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -14,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,23 +38,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
-import androidx.compose.ui.text.style.TextAlign
-
 
 
 class DetailActivitySlope : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-   //slope
+        //slope
         val slopeName = intent.getStringExtra("slope_name") ?: ""
         val slopeColorString = intent.getStringExtra("slope_color") ?: ""
         val isOpen = intent.getBooleanExtra("is_open", false)
@@ -82,11 +77,12 @@ class DetailActivitySlope : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if(itemType == "lift") {
+                    if (itemType == "lift") {
                         LiftDetails(
                             name = liftName,
                             type = liftType,
-                            liftisOpen = liftisOpen)
+                            liftisOpen = liftisOpen
+                        )
                     } else {
                         SlopeDetails(
                             name = slopeName,
@@ -100,16 +96,18 @@ class DetailActivitySlope : ComponentActivity() {
         }
     }
 }
+
 fun parseColor(colorString: String): Color {
     return Color(android.graphics.Color.parseColor(colorString))
 }
+
 @Composable
 fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier) {
     var commentaire by remember { mutableStateOf("") }
     val colorHex = "#${Integer.toHexString(color.toArgb()).substring(2)}"
     var note: Int by remember { mutableStateOf(0) }
     var open = ""
-    if(isOpen == true) {
+    if (isOpen == true) {
         open = "Ouverte"
     } else {
         open = "Fermée"
@@ -198,7 +196,10 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                 textAlign = TextAlign.Center,
 
                 )
-            Row( modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 Button(onClick = { /*TODO*/ }) {
                     Text(text = "Ouverte")
                 }
@@ -209,7 +210,7 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
         }
         item {
             Text(
-                text ="Notez la piste",
+                text = "Notez la piste",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
@@ -245,15 +246,15 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     .padding(10.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedTextColor = colorResource(id =R.color.grey),
-                    unfocusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedLabelColor = colorResource(id =R.color.grey),
-                    unfocusedLeadingIconColor = colorResource(id =R.color.grey),
-                    focusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedContainerColor = colorResource(id =R.color.grey).copy(alpha = 0.2f),
+                    unfocusedTextColor = colorResource(id = R.color.grey),
+                    unfocusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedLabelColor = colorResource(id = R.color.grey),
+                    unfocusedLeadingIconColor = colorResource(id = R.color.grey),
+                    focusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedContainerColor = colorResource(id = R.color.grey).copy(alpha = 0.2f),
 
                     ),
-                )
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -267,7 +268,7 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
 
-            ) {
+                ) {
                 Column {
                     Text(
                         text = "Nom user",
@@ -290,14 +291,13 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
 }
 
 
-
 @Composable
 fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modifier = Modifier) {
     var commentaire by remember { mutableStateOf("") }
 
     var note: Int by remember { mutableStateOf(0) }
     var open = ""
-    if(liftisOpen == true) {
+    if (liftisOpen == true) {
         open = "Ouverte"
     } else {
         open = "Fermée"
@@ -346,10 +346,10 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                         .padding(start = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                            Text(
-                                text = "Type : $type ",
-                                fontSize = 25.sp
-                            )
+                    Text(
+                        text = "Type : $type ",
+                        fontSize = 25.sp
+                    )
 
                     Text(
                         text = "Etat: ${if (liftisOpen) "Ouverte" else "Fermée"}",
@@ -378,7 +378,10 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 textAlign = TextAlign.Center,
 
                 )
-            Row( modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 Button(onClick = { /*TODO*/ }) {
                     Text(text = "Ouverte")
                 }
@@ -387,12 +390,17 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 }
             }
         }
-        item{
-            Text(text = "Afficher la liste des piste", fontSize = 25.sp, modifier = Modifier.padding(8.dp), textAlign = TextAlign.Center)
+        item {
+            Text(
+                text = "Afficher la liste des piste",
+                fontSize = 25.sp,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
         }
         item {
             Text(
-                text ="Notez la remontée",
+                text = "Notez la remontée",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
@@ -428,12 +436,12 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                     .padding(10.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedTextColor = colorResource(id =R.color.grey),
-                    unfocusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedLabelColor = colorResource(id =R.color.grey),
-                    unfocusedLeadingIconColor = colorResource(id =R.color.grey),
-                    focusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedContainerColor = colorResource(id =R.color.grey).copy(alpha = 0.2f),
+                    unfocusedTextColor = colorResource(id = R.color.grey),
+                    unfocusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedLabelColor = colorResource(id = R.color.grey),
+                    unfocusedLeadingIconColor = colorResource(id = R.color.grey),
+                    focusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedContainerColor = colorResource(id = R.color.grey).copy(alpha = 0.2f),
 
                     ),
             )
