@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -186,6 +189,7 @@ fun BottomBar(navController: NavController) {
 }
 
 
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @ExperimentalMaterial3Api
@@ -198,6 +202,8 @@ fun TopBar() {
     var showOpenOnly by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -210,11 +216,42 @@ fun TopBar() {
                         contentDescription = "Profile Icon"
                     )
                 }
-                Spacer(modifier = Modifier.height(600.dp))
+                //add an Icon for a chat and when we click on it we go on ChatActivity
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+
+                ) {
+                    Text(
+                        "Chat", style = TextStyle(
+                            color = Color(0xFFFFA500),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        modifier = Modifier.padding(16.dp)
+                            .clickable {
+                                val intent = Intent(context, ChatActivity::class.java)
+                                context.startActivity(intent)
+                            },
+                    )
+                    Image(
+
+                        painter = painterResource(id = R.drawable.chat),
+                        contentDescription = "Profile Icon",
+                        modifier = Modifier.size(50.dp)
+                            .clickable {
+                                val intent = Intent(context, ChatActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                    )
+                }
                 TextButton(onClick = {
                 }
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+
                         Icon(
                             imageVector = Icons.Outlined.ExitToApp,
                             contentDescription = "Leave Icon",

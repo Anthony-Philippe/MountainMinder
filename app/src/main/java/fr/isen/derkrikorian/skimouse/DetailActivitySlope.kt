@@ -116,6 +116,8 @@ class DetailActivitySlope : ComponentActivity() {
 fun parseColor(colorString: String): Color {
     return Color(android.graphics.Color.parseColor(colorString))
 }
+
+
 @Composable
 fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier, id : Int) {
     var commentaire by remember { mutableStateOf("") }
@@ -353,13 +355,26 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                     ) {
                     Column {
                         // Afficher le nom de l'utilisateur
-                        Text(
-                            text = "${comment.userName} - ${comment.rating} étoiles",
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(4.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        // Afficher le commentaire
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(4.dp)
+                        ) {
+                            Text(
+                                text = "${comment.userName}",
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(4.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            repeat(comment.rating) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = Color.Blue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
                         Text(
                             text = comment.comment,
                             fontSize = 15.sp,
@@ -600,12 +615,25 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 ) {
                     Column {
                         // Afficher le nom de l'utilisateur
-                        Text(
-                            text = "${comment.userName} - ${comment.rating} étoiles",
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(4.dp),
-                            textAlign = TextAlign.Center
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(4.dp)
+                        ) {
+                            Text(
+                                text = "${comment.userName}",
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(4.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            repeat(comment.rating) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = Color.Blue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                         // Afficher le commentaire
                         Text(
                             text = comment.comment,
