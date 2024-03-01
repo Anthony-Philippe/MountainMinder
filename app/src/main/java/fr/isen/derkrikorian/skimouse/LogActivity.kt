@@ -87,12 +87,21 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var username by remember { mutableStateOf("") }
     // Référence à FirebaseAuth
     val auth = FirebaseAuth.getInstance()
 
     var isLogin by remember { mutableStateOf(true) }
     var passwordConfirmation by remember { mutableStateOf("") }
+
+    fun extractUsername(email: String): String {
+        val atIndex = email.indexOf('@')
+        return if (atIndex != -1) {
+            email.substring(0, atIndex)
+        } else {
+            email
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -194,6 +203,12 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                 .addOnCompleteListener(context as Activity) { task ->
                                     if (task.isSuccessful) {
                                         Log.d(TAG, "signInWithEmail:success")
+                                        val currentUser = auth.currentUser
+                                        currentUser?.let {
+                                            // Stocker l'adresse e-mail et extraire le nom d'utilisateur
+                                            email = it.email ?: ""
+                                            username = extractUsername(email)
+                                        }
 
                                         val intent = Intent(context, MainActivity::class.java)
                                         context.startActivity(intent)

@@ -36,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,8 +52,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.ui.text.style.TextAlign
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
 
 
+val database = Firebase.database
+val commentsRef = database.getReference("comments")
 
 class DetailActivitySlope : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,6 +123,47 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
     } else {
         open = "Fermée"
     }
+
+    val comments = remember { mutableStateListOf<Comment>() }
+    commentsRef.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val newComments = mutableListOf<Comment>()
+            for (childSnapshot in snapshot.children) {
+                val comment = childSnapshot.getValue(Comment::class.java)
+                comment?.let {
+                    if (it.slopeName == name) { // Filtrer les commentaires par nom de piste
+                        newComments.add(it)
+                    }
+                }
+            }
+            comments.clear()
+            comments.addAll(newComments)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Handle error
+        }
+    })
+    fun extractUsername(email: String): String {
+        val atIndex = email.indexOf('@')
+        return if (atIndex != -1) {
+            email.substring(0, atIndex)
+        } else {
+            email
+        }
+    }
+    fun writeComment(comment: Comment, slopeName: String) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            val username = extractUsername(it.email ?: "")
+            val commentWithUsername = comment.copy(userName = username, slopeName = slopeName)
+            commentsRef.push().setValue(commentWithUsername)
+        }
+    }
+    var userComment by remember { mutableStateOf("") }
+    var rating by remember { mutableStateOf(0) }
+
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -219,15 +269,14 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val jauneColor = Color(R.color.jaune)
                 repeat(5) { index ->
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = if (index < note) Color.Blue else Color.LightGray,
+                        tint = if (index < rating) Color.Blue else Color.LightGray,
                         modifier = Modifier
                             .clickable {
-                                note = index + 1
+                                rating = index + 1
                             }
                             .padding(4.dp)
                             .size(40.dp)
@@ -236,9 +285,9 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
 
             }
             OutlinedTextField(
-                value = commentaire,
-                onValueChange = { commentaire = it },
-                label = { Text(text = stringResource(id = R.string.log_form4)) },
+                value = userComment,
+                onValueChange = { userComment = it },
+                label = { Text("Votre commentaire") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
@@ -254,35 +303,57 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
 
                     ),
                 )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(10.dp)
-                    .border(
-                        1.dp,
-                        colorResource(id = R.color.grey),
-                        shape = RoundedCornerShape(20.dp)
+            Button(
+                onClick = {
+                    // Écrire le commentaire dans la base de données avec le nom de la piste
+                    val newComment = Comment(
+                        userId = "userId",
+                        userName = "userName",
+                        comment = userComment,
+                        timestamp = System.currentTimeMillis(),
+                        rating = rating
                     )
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
-
-            ) {
-                Column {
-                    Text(
-                        text = "Nom user",
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(4.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "Avis sur la piste",
-                        fontSize = 15.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    writeComment(newComment, name) // Inclure le nom de la piste
+                    // Effacer le champ de commentaire après l'envoi
+                    userComment = ""
                 }
-
+            ) {
+                Text("Envoyer")
             }
+            comments.forEach { comment ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(10.dp)
+                        .border(
+                            1.dp,
+                            colorResource(id = R.color.grey),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
+
+                    ) {
+                    Column {
+                        // Afficher le nom de l'utilisateur
+                        Text(
+                            text = "${comment.userName} - ${comment.rating} étoiles",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        // Afficher le commentaire
+                        Text(
+                            text = comment.comment,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                }
+            }
+
 
         }
     }
@@ -290,18 +361,55 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
 }
 
 
-
 @Composable
 fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modifier = Modifier) {
     var commentaire by remember { mutableStateOf("") }
-
     var note: Int by remember { mutableStateOf(0) }
-    var open = ""
-    if(liftisOpen == true) {
-        open = "Ouverte"
-    } else {
-        open = "Fermée"
+    var open = if (liftisOpen) "Ouverte" else "Fermée"
+
+    val comments = remember { mutableStateListOf<Comment>() }
+
+    commentsRef.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val newComments = mutableListOf<Comment>()
+            for (childSnapshot in snapshot.children) {
+                val comment = childSnapshot.getValue(Comment::class.java)
+                comment?.let {
+                    if (it.liftName == name) { // Filtrer les commentaires par nom de remontée
+                        newComments.add(it)
+                    }
+                }
+            }
+            comments.clear()
+            comments.addAll(newComments)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Handle error
+        }
+    })
+
+    fun extractUsername(email: String): String {
+        val atIndex = email.indexOf('@')
+        return if (atIndex != -1) {
+            email.substring(0, atIndex)
+        } else {
+            email
+        }
     }
+
+    fun writeComment(comment: Comment, liftName: String) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            val username = extractUsername(it.email ?: "")
+            val commentWithUsername = comment.copy(userName = username, liftName = liftName)
+            commentsRef.push().setValue(commentWithUsername)
+        }
+    }
+
+    var userComment by remember { mutableStateOf("") }
+    var rating by remember { mutableStateOf(0) }
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -315,8 +423,8 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
             contentDescription = "Profile Image",
             modifier = Modifier.size(70.dp)
         )
-
     }
+
     LazyColumn(
         modifier = modifier.padding(top = 100.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -346,13 +454,12 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                         .padding(start = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                            Text(
-                                text = "Type : $type ",
-                                fontSize = 25.sp
-                            )
-
                     Text(
-                        text = "Etat: ${if (liftisOpen) "Ouverte" else "Fermée"}",
+                        text = "Type : $type ",
+                        fontSize = 25.sp
+                    )
+                    Text(
+                        text = "Etat: $open",
                         fontSize = 25.sp
                     )
                 }
@@ -370,15 +477,15 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
 
             }
         }
+
         item {
             Text(
                 text = "Est-ce que la remontée : $name est toujours $open ?",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center,
-
-                )
-            Row( modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                textAlign = TextAlign.Center
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(onClick = { /*TODO*/ }) {
                     Text(text = "Ouverte")
                 }
@@ -387,12 +494,19 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 }
             }
         }
-        item{
-            Text(text = "Afficher la liste des piste", fontSize = 25.sp, modifier = Modifier.padding(8.dp), textAlign = TextAlign.Center)
-        }
+
         item {
             Text(
-                text ="Notez la remontée",
+                text = "Afficher la liste des pistes",
+                fontSize = 25.sp,
+                modifier = Modifier.padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        item {
+            Text(
+                text = "Notez la remontée",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center
@@ -402,22 +516,21 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val jauneColor = Color(R.color.jaune)
                 repeat(5) { index ->
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = if (index < note) Color.Blue else Color.LightGray,
+                        tint = if (index < rating) Color.Blue else Color.LightGray,
                         modifier = Modifier
                             .clickable {
-                                note = index + 1
+                                rating = index + 1
                             }
                             .padding(4.dp)
                             .size(40.dp)
                     )
                 }
-
             }
+
             OutlinedTextField(
                 value = commentaire,
                 onValueChange = { commentaire = it },
@@ -428,46 +541,64 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                     .padding(10.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedTextColor = colorResource(id =R.color.grey),
-                    unfocusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedLabelColor = colorResource(id =R.color.grey),
-                    unfocusedLeadingIconColor = colorResource(id =R.color.grey),
-                    focusedBorderColor = colorResource(id =R.color.grey),
-                    unfocusedContainerColor = colorResource(id =R.color.grey).copy(alpha = 0.2f),
-
-                    ),
+                    unfocusedTextColor = colorResource(id = R.color.grey),
+                    unfocusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedLabelColor = colorResource(id = R.color.grey),
+                    unfocusedLeadingIconColor = colorResource(id = R.color.grey),
+                    focusedBorderColor = colorResource(id = R.color.grey),
+                    unfocusedContainerColor = colorResource(id = R.color.grey).copy(alpha = 0.2f),
+                ),
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(10.dp)
-                    .border(
-                        1.dp,
-                        colorResource(id = R.color.grey),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
 
-                ) {
-                Column {
-                    Text(
-                        text = "Nom user",
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(4.dp),
-                        textAlign = TextAlign.Center
+            Button(
+                onClick = {
+                    // Écrire le commentaire dans la base de données avec le nom de la remontée
+                    val newComment = Comment(
+                        userId = "userId",
+                        userName = "userName",
+                        comment = commentaire,
+                        timestamp = System.currentTimeMillis(),
+                        rating = rating
                     )
-                    Text(
-                        text = "Avis sur la remontée",
-                        fontSize = 15.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    writeComment(newComment, name) // Inclure le nom de la remontée
+                    // Effacer le champ de commentaire après l'envoi
+                    commentaire = ""
                 }
-
+            ) {
+                Text("Envoyer")
             }
 
+            comments.forEach { comment ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(10.dp)
+                        .border(
+                            1.dp,
+                            colorResource(id = R.color.grey),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
+                ) {
+                    Column {
+                        // Afficher le nom de l'utilisateur
+                        Text(
+                            text = "${comment.userName} - ${comment.rating} étoiles",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        // Afficher le commentaire
+                        Text(
+                            text = comment.comment,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
-
 }
