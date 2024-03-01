@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -58,6 +59,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.database.ktx.database
+import androidx.compose.ui.text.input.KeyboardType
+
+
 
 class LogActivity : ComponentActivity() {
 
@@ -170,6 +174,9 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
                         focusedLabelColor = colorResource(id =R.color.orange),
                     ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+
+
 
                 )
 
@@ -191,7 +198,8 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
                         focusedLabelColor = colorResource(id =R.color.orange),
                         ),
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = PasswordVisualTransformation(),
+
                 )
 
                 if (!isLogin) {
@@ -214,6 +222,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                             focusedLabelColor = colorResource(id =R.color.orange),),
                         visualTransformation = PasswordVisualTransformation()
                     )
+
                 }
 
                 Button(
