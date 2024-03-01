@@ -177,6 +177,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         value = passwordConfirmation,
                         onValueChange = { passwordConfirmation = it },
                         labelId = R.string.log_form3,
+                        hiddenPassword = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
