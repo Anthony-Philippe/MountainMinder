@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,6 +57,7 @@ import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 
 class LogActivity : ComponentActivity() {
 
@@ -153,6 +155,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 CustomOutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
+                    emailKeyBoard = true,
                     labelId = R.string.log_form1,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -161,6 +164,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                 CustomOutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
+                    hiddenPassword = true,
                     labelId = R.string.log_form2,
                     modifier = Modifier
                         .fillMaxWidth()
