@@ -9,7 +9,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,6 +27,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -201,9 +201,7 @@ fun TopBar() {
 
     ModalNavigationDrawer(
         drawerContent = {
-            ModalDrawerSheet (
-                modifier = Modifier.background(Color.Cyan),
-            ) {
+            ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
                 IconButton(onClick = { scope.launch { drawerState.close() } }
                 ) {
@@ -212,16 +210,25 @@ fun TopBar() {
                         contentDescription = "Profile Icon"
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(600.dp))
                 TextButton(onClick = {
-                }) {
-                    Text(
-                        "Logout", modifier = Modifier.padding(16.dp), style = TextStyle(
-                            color = Color(0xFFFFA500),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.ExitToApp,
+                            contentDescription = "Leave Icon",
+                            tint = Color(0xFFFFA500),
+                            modifier = Modifier.padding(start = 100.dp)
                         )
-                    )
+                        Text(
+                            "Logout", modifier = Modifier.padding(16.dp), style = TextStyle(
+                                color = Color(0xFFFFA500),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
                 }
             }
         },
