@@ -287,8 +287,8 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
                     .clickable {
                         val intent = Intent(context, DetailActivitySlope::class.java)
                         intent.putExtra("slope_name", slope.name)
-                        intent.putExtra("slope_color", slope.color ?: "") // Ajoutez la couleur de la piste
-                        intent.putExtra("is_open", slope.status ?: false) // Ajoutez l'état de la piste
+                        intent.putExtra("slope_color", slope.color ?: "")
+                        intent.putExtra("is_open", slope.status ?: false)
                         context.startActivity(intent)
                     }
             ) {
@@ -323,7 +323,7 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
 fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues, searchQuery: String = "", showOpenOnly: Boolean = false) {
     val lifts = remember { mutableStateListOf<Lift>() }
     val liftsReference = database.child("lifts")
-
+    val context = LocalContext.current
     LaunchedEffect(liftsReference) {
         liftsReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -343,7 +343,18 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
     }
     LazyColumn(modifier = modifier.padding(innerPadding)) {
         items(lifts.filter { it.name?.contains(searchQuery, ignoreCase = true) == true && (!showOpenOnly || it.status == true) }) { lift ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        val intent = Intent(context, DetailActivitySlope::class.java)
+                        intent.putExtra("item_type", "lift")
+                        intent.putExtra("lift_name", lift.name)
+                        intent.putExtra("lift_type", lift.type )
+                        intent.putExtra("lift_is_open", lift.status ?: false)
+                        context.startActivity(intent)
+                    }) {
+        
                 Image(
                     painter = painterResource(id = R.drawable.ski_lift),
                     contentDescription = "Lift",
