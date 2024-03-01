@@ -4,6 +4,7 @@ import android.media.Image
 import androidx.compose.ui.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import androidx.compose.ui.text.style.TextAlign
-
+import com.google.firebase.database.FirebaseDatabase
 
 
 class DetailActivitySlope : ComponentActivity() {
@@ -62,6 +64,7 @@ class DetailActivitySlope : ComponentActivity() {
         val slopeName = intent.getStringExtra("slope_name") ?: ""
         val slopeColorString = intent.getStringExtra("slope_color") ?: ""
         val isOpen = intent.getBooleanExtra("is_open", false)
+        val id = intent.getIntExtra("slope_id", 0)
 
         //Lift
         val itemType = intent.getStringExtra("item_type")
@@ -92,6 +95,7 @@ class DetailActivitySlope : ComponentActivity() {
                             name = slopeName,
                             color = slopeColor,
                             isOpen = isOpen,
+                            id = id
                         )
                     }
                 }
@@ -104,10 +108,14 @@ fun parseColor(colorString: String): Color {
     return Color(android.graphics.Color.parseColor(colorString))
 }
 @Composable
-fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier) {
+fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier = Modifier, id : Int) {
     var commentaire by remember { mutableStateOf("") }
     val colorHex = "#${Integer.toHexString(color.toArgb()).substring(2)}"
     var note: Int by remember { mutableStateOf(0) }
+    val slopesReference = FirebaseDatabase.getInstance().getReference("slopes")
+    val slopeReference = slopesReference.child(id.toString())
+    val context = LocalContext.current
+    var openState by remember { mutableStateOf(isOpen) }
     var open = ""
     if(isOpen == true) {
         open = "Ouverte"
@@ -168,7 +176,7 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
                         }
                     }
                     Text(
-                        text = "Etat: ${if (isOpen) "Ouverte" else "Fermée"}",
+                        text = "Etat: ${if (openState) "Ouverte" else "Fermée"}",
                         fontSize = 25.sp
                     )
                 }
@@ -192,17 +200,25 @@ fun SlopeDetails(name: String, color: Color, isOpen: Boolean, modifier: Modifier
         }
         item {
             Text(
-                text = "Est-ce que la piste : $name est toujours $open ?",
+                text = "Est-ce que la piste : $name est toujours ${if (openState) "Ouverte" else "Fermée"} ?",
                 fontSize = 25.sp,
                 modifier = Modifier.padding(8.dp),
                 textAlign = TextAlign.Center,
 
                 )
             Row( modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = {
+                    slopeReference.child("status").setValue(true)
+                    Toast.makeText(context, "Merci pour cette information", Toast.LENGTH_SHORT).show()
+                    openState = true
+                }, enabled = !openState) {
                     Text(text = "Ouverte")
                 }
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = {
+                    slopeReference.child("status").setValue(false)
+                    Toast.makeText(context, "Merci pour cette information", Toast.LENGTH_SHORT).show()
+                    openState = false
+                }, enabled = openState) {
                     Text(text = "Fermée")
                 }
             }

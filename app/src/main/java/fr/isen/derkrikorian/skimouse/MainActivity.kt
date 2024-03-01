@@ -323,12 +323,15 @@ fun SlopeView(
     LaunchedEffect(slopesReference) {
         slopesReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
+                var slopeIdCounter = 0
                 slopes.clear()
                 for (slopeSnapshot in dataSnapshot.children) {
                     val slope = slopeSnapshot.getValue(Slope::class.java)
+                    slope?.id = slopeIdCounter
                     if (slope != null) {
                         slopes.add(slope)
                     }
+                    slopeIdCounter += 1
                 }
                 slopes.sortBy { SlopeDifficulty.fromString(it.color ?: "").value }
             }
@@ -355,6 +358,7 @@ fun SlopeView(
                         intent.putExtra("slope_name", slope.name)
                         intent.putExtra("slope_color", slope.color ?: "")
                         intent.putExtra("is_open", slope.status ?: false)
+                        intent.putExtra("slope_id", slope.id)
                         context.startActivity(intent)
                     }
             ) {
