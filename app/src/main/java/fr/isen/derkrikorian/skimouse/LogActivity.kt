@@ -21,17 +21,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,30 +37,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 class LogActivity : ComponentActivity() {
-
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,15 +71,12 @@ class LogActivity : ComponentActivity() {
     }
 }
 
-
-
 @Composable
 fun Greeting2(name: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
-    // Référence à FirebaseAuth
     val auth = FirebaseAuth.getInstance()
 
     var isLogin by remember { mutableStateOf(true) }
@@ -113,14 +101,16 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top =0.dp)
-
+                .padding(top = 0.dp),
+            contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(id = R.drawable.flocon),
                 contentDescription = "behind logo",
                 contentScale = ContentScale.FillWidth,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 155.dp)
 
             )
             Column(
@@ -140,8 +130,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     text = stringResource(id = R.string.logo_title),
                     style = TextStyle(
                         fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Serif
+                        fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier.padding(top = 16.dp)
                 )
@@ -150,12 +139,13 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
 
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent ,
+                containerColor = Color.Transparent,
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(400.dp)
                 .background(color = Color.Transparent)
+                .padding(horizontal = 16.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -167,38 +157,35 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     value = email,
                     onValueChange = { email = it },
                     emailKeyBoard = true,
+                    leadingIcon = Icons.Default.Email,
                     labelId = R.string.log_form1,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
                 )
                 CustomOutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
                     hiddenPassword = true,
+                    leadingIcon = Icons.Default.Lock,
                     labelId = R.string.log_form2,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
                 )
-
                 if (!isLogin) {
-                    // New OutlinedTextField for confirming password
                     CustomOutlinedTextField(
                         value = passwordConfirmation,
                         onValueChange = { passwordConfirmation = it },
+                        leadingIcon = Icons.Default.Lock,
                         labelId = R.string.log_form3,
                         hiddenPassword = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
                     )
                 }
 
                 Button(
                     onClick = {
                         if (isLogin) {
-                            // Handle login
                             auth.signInWithEmailAndPassword(email, password)
                                 .addOnCompleteListener(context as Activity) { task ->
                                     if (task.isSuccessful) {
@@ -214,11 +201,14 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                         context.startActivity(intent)
                                     } else {
                                         Log.w(TAG, "signInWithEmail:failure", task.exception)
-                                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Authentication failed.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                         } else {
-                            // Handle registration
                             if (password == passwordConfirmation) {
                                 auth.createUserWithEmailAndPassword(email, password)
                                     .addOnCompleteListener(context as Activity) { task ->
@@ -232,7 +222,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                                 val userData = mapOf(
                                                     "email" to email,
                                                     "uid" to uid,
-                                                    // Add more user data fields as needed
                                                 )
                                                 usersRef.child(uid).setValue(userData)
                                             }
@@ -240,20 +229,33 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                             val intent = Intent(context, MainActivity::class.java)
                                             context.startActivity(intent)
                                         } else {
-                                            Log.w(TAG, "createUserWithEmail:failure", task.exception)
-                                            Toast.makeText(context, "Registration failed.", Toast.LENGTH_SHORT).show()
+                                            Log.w(
+                                                TAG,
+                                                "createUserWithEmail:failure",
+                                                task.exception
+                                            )
+                                            Toast.makeText(
+                                                context,
+                                                "Registration failed.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                     }
                             } else {
-                                Toast.makeText(context, "Passwords do not match.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Passwords do not match.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     },
-
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
+                        .padding(top = 16.dp)
                         .width(200.dp)
                         .height(50.dp),
+                    shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                 ) {
                     Text(
@@ -262,36 +264,31 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         ),
                         style = TextStyle(
                             fontSize = 25.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Serif
+                            fontWeight = FontWeight.Bold
                         ),
                     )
                 }
 
-                // Toggle button
                 Text(
                     text = if (isLogin) stringResource(id = R.string.Boutton_sign) else stringResource(
                         id = R.string.Boutton_log
                     ),
                     color = colorResource(id = R.color.grey),
-                    textDecoration = TextDecoration.Underline,
                     modifier = Modifier
                         .clickable {
                             isLogin = !isLogin
                         }
-                        .align(Alignment.CenterHorizontally),
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 15.dp),
                     style = TextStyle(
                         fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Serif
+                        fontWeight = FontWeight.Bold
                     ),
                 )
             }
         }
     }
-
 }
-
 
 @Preview(showBackground = true)
 @Composable

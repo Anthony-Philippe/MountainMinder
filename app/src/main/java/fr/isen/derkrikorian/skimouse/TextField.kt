@@ -2,32 +2,28 @@ package fr.isen.derkrikorian.skimouse
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 @Composable
@@ -36,11 +32,12 @@ fun CustomOutlinedTextField(
     onValueChange: (String) -> Unit,
     labelId: Int,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
     offset: Boolean = false,
     searchbar: Boolean = false,
-    emailKeyBoard : Boolean = false,
-    hiddenPassword : Boolean = false,
+    emailKeyBoard: Boolean = false,
+    hiddenPassword: Boolean = false,
+    leadingIcon: ImageVector? = null
 ) {
     Box() {
         OutlinedTextField(
@@ -49,13 +46,22 @@ fun CustomOutlinedTextField(
             label = {
                 Text(
                     text = stringResource(id = labelId),
-                    modifier = if (offset) Modifier.offset(y = (-8).dp) else Modifier
+                    modifier = if (offset) Modifier.offset(y = (-8).dp) else Modifier,
+                    style = TextStyle(fontSize = 16.sp)
                 )
             },
-            modifier = modifier
-                .align(Alignment.Center),
+            modifier = modifier.align(Alignment.Center),
             shape = shape,
             visualTransformation = if (hiddenPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            leadingIcon = {
+                leadingIcon?.let {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = null,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+            },
             trailingIcon = {
                 if (searchbar) {
                     Image(
@@ -67,12 +73,12 @@ fun CustomOutlinedTextField(
             },
             keyboardOptions = if (emailKeyBoard) KeyboardOptions(keyboardType = KeyboardType.Email) else KeyboardOptions.Default,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedTextColor = colorResource(id =R.color.grey),
-                unfocusedBorderColor =colorResource(id =R.color.orange),
-                unfocusedLabelColor = colorResource(id =R.color.grey),
-                unfocusedLeadingIconColor = colorResource(id =R.color.orange),
-                focusedBorderColor = colorResource(id =R.color.orange),
-                unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
+                unfocusedTextColor = colorResource(id = R.color.grey),
+                unfocusedBorderColor = colorResource(id = R.color.orange),
+                unfocusedLabelColor = colorResource(id = R.color.grey),
+                unfocusedLeadingIconColor = colorResource(id = R.color.orange),
+                focusedBorderColor = colorResource(id = R.color.orange),
+                unfocusedContainerColor = colorResource(id = R.color.orange).copy(alpha = 0.2f),
             ),
         )
     }
