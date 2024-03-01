@@ -8,17 +8,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,10 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,11 +46,12 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import fr.isen.derkrikorian.skimouse.composables.CustomOutlinedTextField
+import fr.isen.derkrikorian.skimouse.composables.Header
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 class LogActivity : ComponentActivity() {
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -64,7 +60,7 @@ class LogActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Transparent
                 ) {
-                    Greeting2("Android")
+                    LogView("Android")
                 }
             }
         }
@@ -72,13 +68,12 @@ class LogActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting2(name: String, modifier: Modifier = Modifier) {
+fun LogView(name: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
-
     var isLogin by remember { mutableStateOf(true) }
     var passwordConfirmation by remember { mutableStateOf("") }
 
@@ -98,49 +93,9 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 0.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.flocon),
-                contentDescription = "behind logo",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 155.dp)
-
-            )
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .size(250.dp)
-                )
-                Text(
-                    text = stringResource(id = R.string.logo_title),
-                    style = TextStyle(
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-        }
-
+        Header()
         Card(
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent,
-            ),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(400.dp)
@@ -159,8 +114,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     emailKeyBoard = true,
                     leadingIcon = Icons.Default.Email,
                     labelId = R.string.log_form1,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
                 CustomOutlinedTextField(
                     value = password,
@@ -168,8 +122,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     hiddenPassword = true,
                     leadingIcon = Icons.Default.Lock,
                     labelId = R.string.log_form2,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
                 if (!isLogin) {
                     CustomOutlinedTextField(
@@ -178,8 +131,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                         leadingIcon = Icons.Default.Lock,
                         labelId = R.string.log_form3,
                         hiddenPassword = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -192,11 +144,9 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                         Log.d(TAG, "signInWithEmail:success")
                                         val currentUser = auth.currentUser
                                         currentUser?.let {
-                                            // Stocker l'adresse e-mail et extraire le nom d'utilisateur
                                             email = it.email ?: ""
                                             username = extractUsername(email)
                                         }
-
                                         val intent = Intent(context, MainActivity::class.java)
                                         context.startActivity(intent)
                                     } else {
@@ -215,7 +165,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                         if (task.isSuccessful) {
                                             val user = auth.currentUser
                                             Log.d(TAG, "createUserWithEmail:success")
-
                                             user?.uid?.let { uid ->
                                                 val database = Firebase.database
                                                 val usersRef = database.getReference("users")
@@ -225,7 +174,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                                                 )
                                                 usersRef.child(uid).setValue(userData)
                                             }
-
                                             val intent = Intent(context, MainActivity::class.java)
                                             context.startActivity(intent)
                                         } else {
@@ -275,9 +223,7 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
                     ),
                     color = colorResource(id = R.color.grey),
                     modifier = Modifier
-                        .clickable {
-                            isLogin = !isLogin
-                        }
+                        .clickable { isLogin = !isLogin }
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 15.dp),
                     style = TextStyle(
@@ -294,6 +240,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview2() {
     SkiMouseTheme {
-        Greeting2("Android")
+        LogView("Android")
     }
 }

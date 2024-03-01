@@ -1,4 +1,4 @@
-package fr.isen.derkrikorian.skimouse
+package fr.isen.derkrikorian.skimouse.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import fr.isen.derkrikorian.skimouse.R
 
 @Composable
 fun CustomOutlinedTextField(
@@ -37,7 +37,7 @@ fun CustomOutlinedTextField(
     searchbar: Boolean = false,
     emailKeyBoard: Boolean = false,
     hiddenPassword: Boolean = false,
-    leadingIcon: ImageVector? = null
+    leadingIcon: ImageVector? = null,
 ) {
     Box() {
         OutlinedTextField(
