@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -34,7 +38,9 @@ fun CustomOutlinedTextField(
     modifier: Modifier = Modifier,
     shape: RoundedCornerShape = RoundedCornerShape(20.dp),
     offset: Boolean = false,
-    searchbar: Boolean = false
+    searchbar: Boolean = false,
+    emailKeyBoard : Boolean = false,
+    hiddenPassword : Boolean = false,
 ) {
     Box() {
         OutlinedTextField(
@@ -49,6 +55,7 @@ fun CustomOutlinedTextField(
             modifier = modifier
                 .align(Alignment.Center),
             shape = shape,
+            visualTransformation = if (hiddenPassword) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = {
                 if (searchbar) {
                     Image(
@@ -58,6 +65,7 @@ fun CustomOutlinedTextField(
                     )
                 }
             },
+            keyboardOptions = if (emailKeyBoard) KeyboardOptions(keyboardType = KeyboardType.Email) else KeyboardOptions.Default,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedTextColor = colorResource(id =R.color.grey),
                 unfocusedBorderColor =colorResource(id =R.color.orange),
@@ -65,7 +73,7 @@ fun CustomOutlinedTextField(
                 unfocusedLeadingIconColor = colorResource(id =R.color.orange),
                 focusedBorderColor = colorResource(id =R.color.orange),
                 unfocusedContainerColor = colorResource(id =R.color.orange).copy(alpha = 0.2f),
-            )
+            ),
         )
     }
 }
