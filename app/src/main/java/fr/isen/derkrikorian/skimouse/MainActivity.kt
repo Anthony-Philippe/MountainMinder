@@ -9,9 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,37 +21,49 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import fr.isen.derkrikorian.skimouse.ui.theme.button
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -63,22 +74,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
+import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
+import fr.isen.derkrikorian.skimouse.ui.theme.button
 import fr.isen.touret.skimouse.Slope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
@@ -136,8 +137,6 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
 enum class LiftType {
     TELECABINE,
     TELESIEGE,
@@ -146,9 +145,8 @@ enum class LiftType {
 }
 
 
-
 @Composable
-fun BottomBar(navController: NavController){
+fun BottomBar(navController: NavController) {
     val items = listOf("SlopeView", "LiftView")
 
     BottomNavigation(
@@ -188,7 +186,6 @@ fun BottomBar(navController: NavController){
 }
 
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @ExperimentalMaterial3Api
@@ -199,62 +196,126 @@ fun TopBar() {
     val items = listOf("SlopeView", "LiftView")
     var searchQuery by remember { mutableStateOf("") }
     var showOpenOnly by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .height(80.dp)
-                        .padding(top = 20.dp)
-                        .fillMaxWidth()
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet (
+                modifier = Modifier.background(Color.Cyan),
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                IconButton(onClick = { scope.launch { drawerState.close() } }
                 ) {
-                    Image(
-                        painter = logo,
-                        contentDescription = "Logo",
-                        modifier = Modifier
-                            .size(55.dp)
-                            .align(Alignment.CenterVertically)
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Profile Icon"
                     )
-                    CustomOutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        labelId = R.string.SearchPlaceholder,
-                        searchbar = true,
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-                    IconButton(onClick = { /* Handle profile icon press */ }, modifier = Modifier.align(Alignment.CenterVertically)) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile Icon" , modifier = Modifier.size(60.dp))
-                    }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = { showOpenOnly = !showOpenOnly },
-                    modifier = Modifier.height(30.dp).padding(start = 10.dp, end = 10.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id =R.color.orange)) // Set the background color to dark blue
-                ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = {
+                }) {
                     Text(
-                        text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(R.string.ShowOpen),
-                        style = button,
+                        "Logout", modifier = Modifier.padding(16.dp), style = TextStyle(
+                            color = Color(0xFFFFA500),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
             }
         },
-        bottomBar = {
-            BottomBar(navController = navController)
-        }
+        drawerState = drawerState,
+        gesturesEnabled = true
     ) {
-        NavHost(navController, startDestination = items.first()) {
-            composable("SlopeView") { SlopeView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp) , searchQuery = searchQuery, showOpenOnly = showOpenOnly) }
-            composable("LiftView") { LiftView(database = FirebaseDatabase.getInstance().reference, innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp) , searchQuery = searchQuery, showOpenOnly = showOpenOnly) }
+        Scaffold(
+            topBar = {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .height(80.dp)
+                            .padding(top = 20.dp)
+                            .fillMaxWidth()
+                    ) {
+                        IconButton(onClick = {
+                            scope.launch {
+                                drawerState.open()
+                            }
+                        }) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Profile Icon",
+                                modifier = Modifier.size(60.dp)
+                            )
+                        }
+                        CustomOutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            labelId = R.string.SearchPlaceholder,
+                            searchbar = true,
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                        Image(
+                            painter = logo,
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .size(55.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = { showOpenOnly = !showOpenOnly },
+                        modifier = Modifier
+                            .height(30.dp)
+                            .padding(start = 10.dp, end = 10.dp),
+                        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange)) // Set the background color to dark blue
+                    ) {
+                        Text(
+                            text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(
+                                R.string.ShowOpen
+                            ),
+                            style = button,
+                        )
+                    }
+                }
+            },
+            bottomBar = {
+                BottomBar(navController = navController)
+            }
+        ) {
+            NavHost(navController, startDestination = items.first()) {
+                composable("SlopeView") {
+                    SlopeView(
+                        database = FirebaseDatabase.getInstance().reference,
+                        innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp),
+                        searchQuery = searchQuery,
+                        showOpenOnly = showOpenOnly
+                    )
+                }
+                composable("LiftView") {
+                    LiftView(
+                        database = FirebaseDatabase.getInstance().reference,
+                        innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp),
+                        searchQuery = searchQuery,
+                        showOpenOnly = showOpenOnly
+                    )
+                }
+            }
         }
     }
 }
 
 
 @Composable
-fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues, searchQuery: String = "", showOpenOnly: Boolean = false) {
+fun SlopeView(
+    database: DatabaseReference,
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
+    searchQuery: String = "",
+    showOpenOnly: Boolean = false
+) {
     val slopes = remember { mutableStateListOf<Slope>() }
     val context = LocalContext.current
     val slopesReference = database.child("slopes")
@@ -279,7 +340,12 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
     }
 
     LazyColumn(modifier = modifier.padding(innerPadding)) {
-         items(slopes.filter { it.name?.contains(searchQuery, ignoreCase = true) == true && (!showOpenOnly || it.status == true) }) { slope ->
+        items(slopes.filter {
+            it.name?.contains(
+                searchQuery,
+                ignoreCase = true
+            ) == true && (!showOpenOnly || it.status == true)
+        }) { slope ->
             val color = Color(android.graphics.Color.parseColor(slope.color ?: ""))
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -312,7 +378,8 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
                     Text(text = stringResource(id = R.string.Status) + " : ")
                     Spacer(modifier = Modifier.width(8.dp))
                     if (it) stringResource(id = R.string.OpenStatus)
-                    else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
+                    else stringResource(id = R.string.CloseStatus)
+                } ?: stringResource(id = R.string.UnknownStatus))
             }
             Divider(color = Color.Gray)
         }
@@ -320,7 +387,13 @@ fun SlopeView(database: DatabaseReference, modifier: Modifier = Modifier, innerP
 }
 
 @Composable
-fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerPadding: PaddingValues, searchQuery: String = "", showOpenOnly: Boolean = false) {
+fun LiftView(
+    database: DatabaseReference,
+    modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
+    searchQuery: String = "",
+    showOpenOnly: Boolean = false
+) {
     val lifts = remember { mutableStateListOf<Lift>() }
     val liftsReference = database.child("lifts")
     val context = LocalContext.current
@@ -342,7 +415,12 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
         })
     }
     LazyColumn(modifier = modifier.padding(innerPadding)) {
-        items(lifts.filter { it.name?.contains(searchQuery, ignoreCase = true) == true && (!showOpenOnly || it.status == true) }) { lift ->
+        items(lifts.filter {
+            it.name?.contains(
+                searchQuery,
+                ignoreCase = true
+            ) == true && (!showOpenOnly || it.status == true)
+        }) { lift ->
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(8.dp)
@@ -350,11 +428,11 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
                         val intent = Intent(context, DetailActivitySlope::class.java)
                         intent.putExtra("item_type", "lift")
                         intent.putExtra("lift_name", lift.name)
-                        intent.putExtra("lift_type", lift.type )
+                        intent.putExtra("lift_type", lift.type)
                         intent.putExtra("lift_is_open", lift.status ?: false)
                         context.startActivity(intent)
                     }) {
-        
+
                 Image(
                     painter = painterResource(id = R.drawable.ski_lift),
                     contentDescription = "Lift",
@@ -364,13 +442,17 @@ fun LiftView(database : DatabaseReference, modifier: Modifier = Modifier, innerP
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = lift.name ?: stringResource(id = R.string.UnknownStatus))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = stringResource(id = R.string.LiftType) + " : " + (lift.type ?: stringResource(id = R.string.UnknownStatus)))
+                    Text(
+                        text = stringResource(id = R.string.LiftType) + " : " + (lift.type
+                            ?: stringResource(id = R.string.UnknownStatus))
+                    )
                 }
                 Text(text = lift.status?.let {
                     Text(text = stringResource(id = R.string.Status) + " : ")
                     Spacer(modifier = Modifier.width(8.dp))
                     if (it) stringResource(id = R.string.OpenStatus)
-                    else stringResource(id = R.string.CloseStatus) } ?: stringResource(id = R.string.UnknownStatus))
+                    else stringResource(id = R.string.CloseStatus)
+                } ?: stringResource(id = R.string.UnknownStatus))
             }
             Divider(color = Color.Gray)
         }
