@@ -58,6 +58,8 @@ import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 class LogActivity : ComponentActivity() {
 
@@ -186,19 +188,53 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
 
                 Button(
                     onClick = {
-                        // Connexion à Firebase
-                        auth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(context as Activity) { task ->
-                                if (task.isSuccessful) {
-                                    Log.d(TAG, "signInWithEmail:success")
-                                    val intent = Intent(context, MainActivity::class.java)
-                                    context.startActivity(intent)
-                                } else {
-                                    Log.w(TAG, "signInWithEmail:failure", task.exception)
-                                    Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                        if (isLogin) {
+                            // Handle login
+                            auth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(context as Activity) { task ->
+                                    if (task.isSuccessful) {
+                                        Log.d(TAG, "signInWithEmail:success")
+
+                                        val intent = Intent(context, MainActivity::class.java)
+                                        context.startActivity(intent)
+                                    } else {
+                                        Log.w(TAG, "signInWithEmail:failure", task.exception)
+                                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
+                        } else {
+                            // Handle registration
+                            if (password == passwordConfirmation) {
+                                auth.createUserWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener(context as Activity) { task ->
+                                        if (task.isSuccessful) {
+                                            val user = auth.currentUser
+                                            Log.d(TAG, "createUserWithEmail:success")
+
+                                            user?.uid?.let { uid ->
+                                                val database = Firebase.database
+                                                val usersRef = database.getReference("users")
+                                                val userData = mapOf(
+                                                    "email" to email,
+                                                    "uid" to uid,
+                                                    // Add more user data fields as needed
+                                                )
+                                                usersRef.child(uid).setValue(userData)
+                                            }
+
+                                            val intent = Intent(context, MainActivity::class.java)
+                                            context.startActivity(intent)
+                                        } else {
+                                            Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                                            Toast.makeText(context, "Registration failed.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                            } else {
+                                Toast.makeText(context, "Passwords do not match.", Toast.LENGTH_SHORT).show()
                             }
+                        }
                     },
+
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(200.dp)
