@@ -5,30 +5,37 @@ import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -42,7 +49,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,7 +68,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -92,23 +97,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             database = FirebaseDatabase.getInstance().reference
             SkiMouseTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     TopBar()
-                    //BottomBar()
                 }
             }
         }
 
         database = FirebaseDatabase.getInstance().reference
 
-        // Write test
         writeTest()
-
-        // Read test
         readTest()
     }
 
@@ -138,7 +138,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 enum class LiftType {
     TELECABINE,
     TELESIEGE,
@@ -146,21 +145,17 @@ enum class LiftType {
     TAPIS,
 }
 
-
 @Composable
 fun BottomBar(navController: NavController) {
     val items = listOf("SlopeView", "LiftView")
 
-    BottomNavigation(
-        backgroundColor = Color.White // Set the background color to white
-    ) {
+    BottomNavigation(backgroundColor = Color.White) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
 
         items.forEachIndexed { index, screen ->
             BottomNavigationItem(
                 icon = {
-                    // Use icons instead of text
                     if (index == 0) {
                         Image(
                             painter = painterResource(id = R.drawable.ski_stickman_black),
@@ -187,14 +182,11 @@ fun BottomBar(navController: NavController) {
     }
 }
 
-
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @ExperimentalMaterial3Api
 fun TopBar() {
     val logo: Painter = painterResource(id = R.drawable.logo)
-    var textState = remember { mutableStateOf(TextFieldValue()) }
     val navController = rememberNavController()
     val items = listOf("SlopeView", "LiftView")
     var searchQuery by remember { mutableStateOf("") }
@@ -203,82 +195,124 @@ fun TopBar() {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-
     ModalNavigationDrawer(
         drawerContent = {
-            ModalDrawerSheet {
-                Spacer(modifier = Modifier.height(16.dp))
-                IconButton(onClick = { scope.launch { drawerState.close() } }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = "Profile Icon"
-                    )
-                }
-                //add an Icon for a chat and when we click on it we go on ChatActivity
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-
-                ) {
-                    Text(
-                        "Chat", style = TextStyle(
-                            color = Color(0xFFFFA500),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                        ),
-                        modifier = Modifier.padding(16.dp)
-                            .clickable {
-                                val intent = Intent(context, ChatActivity::class.java)
-                                context.startActivity(intent)
-                            },
-                    )
-                    Image(
-
-                        painter = painterResource(id = R.drawable.chat),
-                        contentDescription = "Profile Icon",
-                        modifier = Modifier.size(50.dp)
-                            .clickable {
-                                val intent = Intent(context, ChatActivity::class.java)
-                                context.startActivity(intent)
-                            }
-                    )
-                }
-                TextButton(onClick = {
-                }
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-
-                        Icon(
-                            imageVector = Icons.Outlined.ExitToApp,
-                            contentDescription = "Leave Icon",
-                            tint = Color(0xFFFFA500),
-                            modifier = Modifier.padding(start = 100.dp)
-                        )
-                        Text(
-                            "Logout", modifier = Modifier.padding(16.dp), style = TextStyle(
-                                color = Color(0xFFFFA500),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
+            ModalDrawerSheet(
+                content = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.close() } },
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = "Profile Icon",
+                                tint = Color.White
                             )
-                        )
+                        }
+
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .clickable {
+                                        val intent = Intent(context, ChatActivity::class.java)
+                                        context.startActivity(intent)
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Send,
+                                    contentDescription = "Leave Icon",
+                                    tint = Color.White
+                                )
+                                Text(
+                                    "Live Chat",
+                                    style = TextStyle(
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .clickable {
+                                        Toast
+                                            .makeText(context, "Itinéraires", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.LocationOn,
+                                    contentDescription = "Leave Icon",
+                                    tint = Color.White
+                                )
+                                Text(
+                                    "Itinéraires",
+                                    style = TextStyle(
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .clickable {
+                                        Toast
+                                            .makeText(context, "Logout", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ExitToApp,
+                                    contentDescription = "Leave Icon",
+                                    tint = Color.White
+                                )
+                                Text(
+                                    "Logout",
+                                    style = TextStyle(
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+                        }
                     }
-                }
-            }
+                },
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxSize(fraction = 0.45f),
+                drawerContainerColor = colorResource(id = R.color.orange)
+            )
         },
         drawerState = drawerState,
         gesturesEnabled = true
     ) {
         Scaffold(
             topBar = {
-                Column {
+                Column(modifier = Modifier.padding(10.dp)) {
                     Row(
                         modifier = Modifier
-                            .height(80.dp)
-                            .padding(top = 20.dp)
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = {
                             scope.launch {
@@ -286,18 +320,21 @@ fun TopBar() {
                             }
                         }) {
                             Icon(
-                                Icons.Default.Person,
+                                Icons.Outlined.Menu,
                                 contentDescription = "Profile Icon",
-                                modifier = Modifier.size(60.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                         CustomOutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
                             labelId = R.string.SearchPlaceholder,
-                            searchbar = true,
+                            leadingIcon = Icons.Outlined.Search,
                             modifier = Modifier
-                                .weight(1f)
+                                .height(40.dp)
+                                .padding(bottom = 8.dp),
+                            showPlaceholder = false,
+                            isSearchBar = true
                         )
                         Image(
                             painter = logo,
@@ -307,13 +344,14 @@ fun TopBar() {
                                 .align(Alignment.CenterVertically)
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
                     Button(
                         onClick = { showOpenOnly = !showOpenOnly },
                         modifier = Modifier
                             .height(30.dp)
-                            .padding(start = 10.dp, end = 10.dp),
-                        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange)) // Set the background color to dark blue
+                            .padding(start = 10.dp, end = 10.dp)
+                            .fillMaxWidth()
+                            .widthIn(min = 100.dp),
+                        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                     ) {
                         Text(
                             text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(
@@ -332,7 +370,7 @@ fun TopBar() {
                 composable("SlopeView") {
                     SlopeView(
                         database = FirebaseDatabase.getInstance().reference,
-                        innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp),
+                        innerPadding = PaddingValues(top = 100.dp, bottom = 75.dp),
                         searchQuery = searchQuery,
                         showOpenOnly = showOpenOnly
                     )
@@ -340,7 +378,7 @@ fun TopBar() {
                 composable("LiftView") {
                     LiftView(
                         database = FirebaseDatabase.getInstance().reference,
-                        innerPadding = PaddingValues(top = 130.dp, bottom = 75.dp),
+                        innerPadding = PaddingValues(top = 100.dp, bottom = 75.dp),
                         searchQuery = searchQuery,
                         showOpenOnly = showOpenOnly
                     )
@@ -349,7 +387,6 @@ fun TopBar() {
         }
     }
 }
-
 
 @Composable
 fun SlopeView(
@@ -395,7 +432,7 @@ fun SlopeView(
             val color = Color(android.graphics.Color.parseColor(slope.color ?: ""))
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(horizontal = 35.dp, vertical = 13.dp)
                     .clickable {
                         val intent = Intent(context, DetailActivitySlope::class.java)
                         intent.putExtra("slope_name", slope.name)
@@ -410,20 +447,25 @@ fun SlopeView(
                     contentDescription = "Slope",
                     modifier = Modifier.size(40.dp)
                 )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = slope.name ?: "No name")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row {
-                        Text(text = stringResource(id = R.string.Color) + " : ")
-                        Canvas(modifier = Modifier.size(20.dp)) {
+                Column(modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 20.dp)) {
+                    Text(
+                        text = slope.name?.uppercase() ?: "No name",
+                        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(id = R.string.Color),
+                            modifier = Modifier.padding(end = 8.dp),
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        )
+                        Canvas(modifier = Modifier.size(12.dp)) {
                             drawCircle(color = color)
                         }
                     }
                 }
                 Text(text = slope.status?.let {
-                    Text(text = stringResource(id = R.string.Status) + " : ")
-                    Spacer(modifier = Modifier.width(8.dp))
                     if (it) stringResource(id = R.string.OpenStatus)
                     else stringResource(id = R.string.CloseStatus)
                 } ?: stringResource(id = R.string.UnknownStatus))
