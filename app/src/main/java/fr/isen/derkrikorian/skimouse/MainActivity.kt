@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -447,9 +445,11 @@ fun SlopeView(
                     contentDescription = "Slope",
                     modifier = Modifier.size(40.dp)
                 )
-                Column(modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 20.dp)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 20.dp)
+                ) {
                     Text(
                         text = slope.name?.uppercase() ?: "No name",
                         style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -512,7 +512,7 @@ fun LiftView(
         }) { lift ->
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(horizontal = 35.dp, vertical = 13.dp)
                     .clickable {
                         val intent = Intent(context, DetailActivitySlope::class.java)
                         intent.putExtra("item_type", "lift")
@@ -520,25 +520,31 @@ fun LiftView(
                         intent.putExtra("lift_type", lift.type)
                         intent.putExtra("lift_is_open", lift.status ?: false)
                         context.startActivity(intent)
-                    }) {
-
+                    }
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.ski_lift),
                     contentDescription = "Lift",
                     modifier = Modifier.size(40.dp)
                 )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = lift.name ?: stringResource(id = R.string.UnknownStatus))
-                    Spacer(modifier = Modifier.height(8.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 20.dp)
+                ) {
                     Text(
-                        text = stringResource(id = R.string.LiftType) + " : " + (lift.type
-                            ?: stringResource(id = R.string.UnknownStatus))
+                        text = lift.name?.uppercase()
+                            ?: stringResource(id = R.string.UnknownStatus),
+                        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.LiftType) + " - " + (lift.type
+                            ?: stringResource(id = R.string.UnknownStatus)),
+                        modifier = Modifier.padding(end = 8.dp),
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     )
                 }
                 Text(text = lift.status?.let {
-                    Text(text = stringResource(id = R.string.Status) + " : ")
-                    Spacer(modifier = Modifier.width(8.dp))
                     if (it) stringResource(id = R.string.OpenStatus)
                     else stringResource(id = R.string.CloseStatus)
                 } ?: stringResource(id = R.string.UnknownStatus))
