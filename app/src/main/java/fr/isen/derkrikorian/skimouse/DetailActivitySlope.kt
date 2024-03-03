@@ -1,5 +1,6 @@
 package fr.isen.derkrikorian.skimouse
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -28,17 +29,21 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -71,6 +77,7 @@ val database = Firebase.database
 val commentsRef = database.getReference("comments")
 
 class DetailActivitySlope : ComponentActivity() {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -98,24 +105,57 @@ class DetailActivitySlope : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (itemType == "lift") {
-                        LiftDetails(
-                            name = liftName,
-                            type = liftType,
-                            liftisOpen = liftisOpen
-                        )
-                    } else {
-                        SlopeDetails(
-                            name = slopeName,
-                            color = slopeColor,
-                            isOpen = isOpen,
-                            id = id
-                        )
+                    Scaffold(
+                        topBar = {
+                            CustomTopBar()
+                        }
+                    ) {
+                        if (itemType == "lift") {
+                            LiftDetails(
+                                name = liftName,
+                                type = liftType,
+                                liftisOpen = liftisOpen
+                            )
+                        } else {
+                            SlopeDetails(
+                                name = slopeName,
+                                color = slopeColor,
+                                isOpen = isOpen,
+                                id = id
+                            )
+                        }
                     }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTopBar() {
+    val logo: Painter = painterResource(id = R.drawable.logo)
+    TopAppBar(
+        title = { },
+        navigationIcon = {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    Icons.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        },
+        actions = {
+            Image(
+                painter = logo,
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(55.dp)
+                    .align(Alignment.CenterVertically)
+            )
+        }
+    )
 }
 
 fun parseColor(colorString: String): Color {
@@ -186,14 +226,13 @@ fun SlopeDetails(
     var rating by remember { mutableIntStateOf(0) }
 
     LazyColumn(
-        modifier = modifier.padding(top = 100.dp),
+        modifier = modifier.padding(top = 75.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -371,47 +410,68 @@ fun SlopeDetails(
             )
             Divider(modifier = Modifier.padding(top = 10.dp))
 
-            Text(text = "Derniers commentaires", fontSize = 15.sp, modifier = Modifier.padding(start = 20.dp, top = 12.dp))
+            Text(
+                text = "Avis sur la piste",
+                fontSize = 15.sp,
+                modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
+            )
 
-            comments.forEach { comment ->
-                Box(
+            if (comments.isEmpty()) {
+                Text(
+                    text = "Aucun avis sur cette piste",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(10.dp)
-                        .border(
-                            1.dp,
-                            colorResource(id = R.color.grey),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
-                ) {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(4.dp)
-                        ) {
-                            Text(
-                                text = "${comment.userName}",
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(4.dp),
-                                textAlign = TextAlign.Center
-                            )
-                            repeat(comment.rating) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = Color.Blue,
-                                    modifier = Modifier.size(20.dp)
+                        .padding(16.dp),
+                    color = colorResource(id = R.color.orange)
+                )
+            } else {
+                comments.forEach { comment ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 48f,
+                                    topEnd = 48f,
+                                    bottomStart = 0f,
+                                    bottomEnd = 48f
                                 )
+                            )
+                            .background(color = colorResource(id = R.color.orange).copy(alpha = 0.25f)),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${comment.userName}",
+                                    fontSize = 16.sp
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                repeat(5) { index ->
+                                    val starColor = if (index < comment.rating) {
+                                        colorResource(id = R.color.orange)
+                                    } else {
+                                        Color.Gray
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = starColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
                             }
+                            Text(
+                                text = comment.comment,
+                                fontSize = 15.sp,
+                            )
                         }
-                        Text(
-                            text = comment.comment,
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
             }
@@ -467,23 +527,8 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
     var userComment by remember { mutableStateOf("") }
     var rating by remember { mutableStateOf(0) }
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Slope Image",
-            modifier = Modifier.size(100.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.profil),
-            contentDescription = "Profile Image",
-            modifier = Modifier.size(70.dp)
-        )
-    }
-
     LazyColumn(
-        modifier = modifier.padding(top = 100.dp),
+        modifier = modifier.padding(top = 75.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
