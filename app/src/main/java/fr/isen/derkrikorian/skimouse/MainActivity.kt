@@ -79,11 +79,14 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
-import fr.isen.derkrikorian.skimouse.SlopeDifficulty.Companion.getSlopeImageResource
+import fr.isen.derkrikorian.skimouse.Network.Lift
+import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty.Companion.getSlopeImageResource
 import fr.isen.derkrikorian.skimouse.composables.CustomOutlinedTextField
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import fr.isen.derkrikorian.skimouse.ui.theme.button
-import fr.isen.touret.skimouse.Slope
+import fr.isen.derkrikorian.skimouse.Network.Slope
+import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
+import fr.isen.derkrikorian.skimouse.Network.User
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

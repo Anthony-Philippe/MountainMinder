@@ -1,6 +1,7 @@
-package fr.isen.derkrikorian.skimouse
+package fr.isen.derkrikorian.skimouse.Network
 
 import androidx.compose.ui.graphics.Color
+import fr.isen.derkrikorian.skimouse.R
 
 enum class SlopeDifficulty(val color: Color, val value: Int) {
     GREEN(Color.Green, 1),

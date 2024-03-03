@@ -70,6 +70,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import fr.isen.derkrikorian.skimouse.Network.Comment
+import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 val database = Firebase.database

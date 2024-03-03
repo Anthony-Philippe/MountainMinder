@@ -73,7 +73,7 @@ fun CustomOutlinedTextField(
                 unfocusedContainerColor = colorResource(id = R.color.orange).copy(alpha = 0.2f),
             ),
             textStyle = TextStyle(
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Start,
                 fontSize = if (isSearchBar) 14.sp else 16.sp
             )
         )

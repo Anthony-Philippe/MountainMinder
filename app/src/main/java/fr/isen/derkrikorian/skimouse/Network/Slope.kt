@@ -1,4 +1,4 @@
-package fr.isen.touret.skimouse
+package fr.isen.derkrikorian.skimouse.Network
 
 data class Slope (
     var comment: String? = null,

@@ -1,4 +1,4 @@
-package fr.isen.derkrikorian.skimouse
+package fr.isen.derkrikorian.skimouse.Network
 
 data class Lift(
     var comment: String? = null,
