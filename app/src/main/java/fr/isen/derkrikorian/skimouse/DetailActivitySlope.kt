@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -232,7 +231,8 @@ fun SlopeDetails(
         item {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -244,8 +244,7 @@ fun SlopeDetails(
 
         item {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -343,14 +342,13 @@ fun SlopeDetails(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Notez la piste",
+                    text = "Note",
                     fontSize = 20.sp,
                     modifier = Modifier.padding(8.dp),
                     textAlign = TextAlign.Center
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     repeat(5) { index ->
@@ -363,7 +361,7 @@ fun SlopeDetails(
                                     rating = index + 1
                                 }
                                 .padding(4.dp)
-                                .size(30.dp)
+                                .size(25.dp)
                         )
                     }
                 }
@@ -377,13 +375,14 @@ fun SlopeDetails(
                     .fillMaxWidth()
                     .height(85.dp)
                     .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedTextColor = colorResource(id = R.color.grey),
                     unfocusedBorderColor = colorResource(id = R.color.grey),
                     unfocusedLabelColor = colorResource(id = R.color.grey),
                     unfocusedLeadingIconColor = colorResource(id = R.color.grey),
-                    focusedBorderColor = colorResource(id = R.color.grey),
+                    focusedBorderColor = colorResource(id = R.color.orange),
+                    focusedLabelColor = colorResource(id = R.color.orange),
                     unfocusedContainerColor = colorResource(id = R.color.grey).copy(alpha = 0.2f),
                 ),
                 trailingIcon = {
@@ -480,11 +479,18 @@ fun SlopeDetails(
 }
 
 @Composable
-fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modifier = Modifier) {
+fun LiftDetails(
+    name: String,
+    type: String,
+    liftisOpen: Boolean,
+    modifier: Modifier = Modifier
+) {
     var commentaire by remember { mutableStateOf("") }
     var note: Int by remember { mutableStateOf(0) }
     var open = if (liftisOpen) "Ouverte" else "Fermée"
     val comments = remember { mutableStateListOf<Comment>() }
+    val context = LocalContext.current
+    var openState by remember { mutableStateOf(liftisOpen) }
 
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -548,91 +554,158 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Type : $type ",
-                        fontSize = 25.sp
-                    )
-                    Text(
-                        text = "Etat: $open",
-                        fontSize = 25.sp
-                    )
-                }
-                Row(
-                    modifier = Modifier.padding(end = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Image(
-                        painter = painterResource(id = R.drawable.liftrabbit),
-                        contentDescription = "Rabbit Image",
-                        modifier = Modifier.size(175.dp)
-                    )
-                }
-
-            }
-        }
-
-        item {
-            Text(
-                text = "Est-ce que la remontée : $name est toujours $open ?",
-                fontSize = 25.sp,
-                modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(onClick = { /*TODO*/ }) {
-                    Text(text = "Ouverte")
-                }
-                Button(onClick = { /*TODO*/ }) {
-                    Text(text = "Fermée")
-                }
-            }
-        }
-
-        item {
-            Text(
-                text = "Afficher la liste des pistes",
-                fontSize = 25.sp,
-                modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
-            )
-        }
-
-        item {
-            Text(
-                text = "Notez la remontée",
-                fontSize = 25.sp,
-                modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(5) { index ->
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = if (index < rating) Color.Blue else Color.LightGray,
-                        modifier = Modifier
-                            .clickable {
-                                rating = index + 1
-                            }
-                            .padding(4.dp)
-                            .size(40.dp)
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "→",
+                            fontSize = 24.sp
+                        )
+                        Text(
+                            text = type,
+                            fontSize = 25.sp
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = if (openState) Icons.Filled.CheckCircle else Icons.Filled.Warning,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(30.dp)
+                                .padding(end = 10.dp),
+                        )
+                        Text(
+                            text = "${if (openState) "Ouvert" else "Fermé"}",
+                            fontSize = 25.sp
+                        )
+                    }
+                }
+                Image(
+                    painter = painterResource(id = R.drawable.liftrabbit),
+                    contentDescription = "Rabbit Image",
+                    modifier = Modifier.size(125.dp)
+                )
+            }
+        }
+
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(horizontal = 50.dp)
+            ) {
+                Text(
+                    text = "Signaler un changement d'état de la remontée",
+                    fontSize = 18.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = openState,
+                    onCheckedChange = { isChecked ->
+                        openState = isChecked
+                        Toast.makeText(context, "Merci pour l'information", Toast.LENGTH_SHORT)
+                            .show()
+                    },
+                    thumbContent = if (openState) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                            )
+                        }
+                    } else {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
+                                contentDescription = null,
+                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                            )
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = colorResource(id = R.color.orange),
+                        checkedTrackColor = colorResource(id = R.color.orange).copy(alpha = 0.5f),
                     )
+                )
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Pistes desservies",
+                    fontSize = 22.sp,
+                    modifier = Modifier.padding(8.dp)
+                )
+                LazyRow {
+                    val pistes = listOf(
+                        "La pistache",
+                        "Le floriant",
+                        "Capibara",
+                        "Anna",
+                        "Dandelot",
+                        "Barabara",
+                    )
+                    items(pistes) { piste ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(color = colorResource(id = R.color.orange).copy(alpha = 0.5f)),
+                        ) {
+                            Text(
+                                text = piste,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(4.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Divider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Note",
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(8.dp),
+                    textAlign = TextAlign.Center
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(5) { index ->
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (index < rating) colorResource(id = R.color.orange) else Color.LightGray,
+                            modifier = Modifier
+                                .clickable {
+                                    rating = index + 1
+                                }
+                                .padding(4.dp)
+                                .size(25.dp)
+                        )
+                    }
                 }
             }
 
@@ -642,74 +715,104 @@ fun LiftDetails(name: String, type: String, liftisOpen: Boolean, modifier: Modif
                 label = { Text(text = stringResource(id = R.string.log_form4)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(10.dp),
-                shape = RoundedCornerShape(20.dp),
+                    .height(85.dp)
+                    .padding(horizontal = 20.dp),
+                shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedTextColor = colorResource(id = R.color.grey),
                     unfocusedBorderColor = colorResource(id = R.color.grey),
                     unfocusedLabelColor = colorResource(id = R.color.grey),
                     unfocusedLeadingIconColor = colorResource(id = R.color.grey),
-                    focusedBorderColor = colorResource(id = R.color.grey),
+                    focusedBorderColor = colorResource(id = R.color.orange),
+                    focusedLabelColor = colorResource(id = R.color.orange),
                     unfocusedContainerColor = colorResource(id = R.color.grey).copy(alpha = 0.2f),
                 ),
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            val newComment = Comment(
+                                userId = "userId",
+                                userName = "userName",
+                                comment = commentaire,
+                                timestamp = System.currentTimeMillis(),
+                                rating = rating
+                            )
+                            writeComment(newComment, name)
+                            commentaire = ""
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            )
+            Divider(modifier = Modifier.padding(top = 10.dp))
+
+            Text(
+                text = "Avis sur la remontée",
+                fontSize = 15.sp,
+                modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
             )
 
-            Button(
-                onClick = {
-                    val newComment = Comment(
-                        userId = "userId",
-                        userName = "userName",
-                        comment = commentaire,
-                        timestamp = System.currentTimeMillis(),
-                        rating = rating
-                    )
-                    writeComment(newComment, name)
-                    commentaire = ""
-                }
-            ) {
-                Text("Envoyer")
-            }
-
-            comments.forEach { comment ->
-                Box(
+            if (comments.isEmpty()) {
+                Text(
+                    text = "Aucun avis sur cette remontée",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(10.dp)
-                        .border(
-                            1.dp,
-                            colorResource(id = R.color.grey),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(color = colorResource(id = R.color.grey).copy(alpha = 0.2f)),
-                ) {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(4.dp)
-                        ) {
-                            Text(
-                                text = "${comment.userName}",
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(4.dp),
-                                textAlign = TextAlign.Center
-                            )
-                            repeat(comment.rating) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = Color.Blue,
-                                    modifier = Modifier.size(20.dp)
+                        .padding(16.dp),
+                    color = colorResource(id = R.color.orange)
+                )
+            } else {
+                comments.forEach { comment ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 48f,
+                                    topEnd = 48f,
+                                    bottomStart = 0f,
+                                    bottomEnd = 48f
                                 )
+                            )
+                            .background(color = colorResource(id = R.color.orange).copy(alpha = 0.25f)),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${comment.userName}",
+                                    fontSize = 16.sp
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                repeat(5) { index ->
+                                    val starColor = if (index < comment.rating) {
+                                        colorResource(id = R.color.orange)
+                                    } else {
+                                        Color.Gray
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = starColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
                             }
+                            Text(
+                                text = comment.comment,
+                                fontSize = 15.sp,
+                            )
                         }
-                        Text(
-                            text = comment.comment,
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
             }
