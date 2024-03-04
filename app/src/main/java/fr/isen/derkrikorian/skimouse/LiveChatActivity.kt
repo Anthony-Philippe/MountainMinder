@@ -35,6 +35,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 class LiveChatActivity : ComponentActivity() {
@@ -49,7 +50,7 @@ class LiveChatActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            CustomTopBar()
+                            Navbar()
                         }
                     ) {
                         LiveChatView("Android")
@@ -168,7 +169,7 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview3() {
+fun GreetingPreview4() {
     SkiMouseTheme {
         LiveChatView("Android")
     }

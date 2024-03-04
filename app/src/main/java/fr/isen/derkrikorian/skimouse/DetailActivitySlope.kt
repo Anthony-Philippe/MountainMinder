@@ -29,9 +29,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +40,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,7 +51,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -72,6 +68,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import fr.isen.derkrikorian.skimouse.Network.Comment
 import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 val database = Firebase.database
@@ -108,7 +105,7 @@ class DetailActivitySlope : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            CustomTopBar()
+                            Navbar()
                         }
                     ) {
                         if (itemType == "lift") {
@@ -130,33 +127,6 @@ class DetailActivitySlope : ComponentActivity() {
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomTopBar() {
-    val logo: Painter = painterResource(id = R.drawable.logo)
-    TopAppBar(
-        title = { },
-        navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-        },
-        actions = {
-            Image(
-                painter = logo,
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .size(55.dp)
-                    .align(Alignment.CenterVertically)
-            )
-        }
-    )
 }
 
 fun parseColor(colorString: String): Color {

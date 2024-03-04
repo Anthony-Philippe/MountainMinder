@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 class ItineraryActivity : ComponentActivity() {
@@ -52,7 +53,7 @@ class ItineraryActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            CustomTopBar()
+                            Navbar()
                         }
                     ) {
                         ItineraryView("Android")
