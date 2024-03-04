@@ -12,15 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SkiMouse"
         tools:targetApi="31">
+      
         <activity
             android:name=".ItineraryActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/title_activity_itinerary"
             android:theme="@style/Theme.SkiMouse">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+        <activity
+            android:name=".LiveChatActivity"
+            android:exported="false"
+            android:label="@string/title_activity_live_chat"
+            android:theme="@style/Theme.SkiMouse">
         </activity>
         <activity
             android:name=".ChatActivity"
@@ -34,9 +36,13 @@
             android:theme="@style/Theme.SkiMouse" />
         <activity
             android:name=".LogActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_log"
             android:theme="@style/Theme.SkiMouse">
+          <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
@@ -44,6 +50,6 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.SkiMouse">
         </activity>
+          
     </application>
-
 </manifest>
