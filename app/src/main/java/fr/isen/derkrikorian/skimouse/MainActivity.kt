@@ -80,13 +80,13 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.MainActivity.Companion.KEY_ROUTE
 import fr.isen.derkrikorian.skimouse.Network.Lift
+import fr.isen.derkrikorian.skimouse.Network.Slope
+import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
 import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty.Companion.getSlopeImageResource
+import fr.isen.derkrikorian.skimouse.Network.User
 import fr.isen.derkrikorian.skimouse.composables.CustomOutlinedTextField
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import fr.isen.derkrikorian.skimouse.ui.theme.button
-import fr.isen.derkrikorian.skimouse.Network.Slope
-import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
-import fr.isen.derkrikorian.skimouse.Network.User
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -224,7 +224,7 @@ fun TopBar() {
                                 modifier = Modifier
                                     .padding(vertical = 10.dp)
                                     .clickable {
-                                        val intent = Intent(context, ChatActivity::class.java)
+                                        val intent = Intent(context, LiveChatActivity::class.java)
                                         context.startActivity(intent)
                                     }
                             ) {
