@@ -22,5 +22,6 @@
     <string name="title_activity_detail">DetailActivity</string>
     <string name="title_activity_detail_slope">DetailActivitySlope</string>
     <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_itinerary">ItineraryActivity</string>
     <string name="title_activity_live_chat">LiveChatActivity</string>
 </resources>

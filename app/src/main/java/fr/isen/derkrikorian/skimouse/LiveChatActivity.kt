@@ -44,6 +44,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.Network.Comment
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 val chatMessagesRef = database.getReference("messages")
@@ -60,7 +61,7 @@ class LiveChatActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            CustomTopBar()
+                            Navbar()
                         }
                     ) {
                         LiveChatView("Android")
@@ -214,7 +215,7 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview3() {
+fun GreetingPreview4() {
     SkiMouseTheme {
         LiveChatView("Android")
     }

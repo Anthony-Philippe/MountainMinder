@@ -230,7 +230,7 @@ fun TopBar() {
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Send,
-                                    contentDescription = "Leave Icon",
+                                    contentDescription = "Live Chat",
                                     tint = Color.White
                                 )
                                 Text(
@@ -249,9 +249,8 @@ fun TopBar() {
                                 modifier = Modifier
                                     .padding(vertical = 10.dp)
                                     .clickable {
-                                        Toast
-                                            .makeText(context, "Itinéraires", Toast.LENGTH_SHORT)
-                                            .show()
+                                        val intent = Intent(context, ItineraryActivity::class.java)
+                                        context.startActivity(intent)
                                     }
                             ) {
                                 Icon(
