@@ -73,20 +73,6 @@ class LiveChatActivity : ComponentActivity() {
 
 @Composable
 fun LiveChatView(name: String, modifier: Modifier = Modifier) {
-    /*val messages = listOf(
-        "C'est une excellente nouvelle !" to "Anonyme",
-        "Je suis vraiment impressionné." to "Moi",
-        "Très bien, je suis d'accord." to "Anonyme",
-        "Wow, c'est incroyable !" to "Anonyme",
-        "Intéressant, merci pour l'info." to "Anonyme",
-        "OK, je vais le prendre en compte." to "Moi",
-        "Je ne sais pas quoi dire." to "Anonyme",
-        "C'est juste ce qu'il me faut." to "Anonyme",
-        "Oh, vraiment ? C'est surprenant !" to "Anonyme",
-        "Je vais y réfléchir sérieusement." to "Moi",
-        "C'est une belle journée aujourd'hui." to "Anonyme",
-        "Je pense que nous devrions continuer." to "Anonyme"
-    )*/
 
     val comments = remember { mutableStateListOf<Comment>() }
     chatMessagesRef.addValueEventListener(object : ValueEventListener {
@@ -133,10 +119,10 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
     ) {
         LazyColumn(
             modifier = Modifier.weight(1f),
-            reverseLayout = false,
+            reverseLayout = true,
         ) {
             item{
-                comments.forEach { comment ->
+                comments.asReversed().forEach { comment ->
                     val isUserMessage = comment.userName == username
 
                     Box(
