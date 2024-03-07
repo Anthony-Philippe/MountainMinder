@@ -2,6 +2,7 @@ package fr.isen.derkrikorian.skimouse
 
 import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -40,7 +41,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
@@ -51,7 +51,6 @@ import fr.isen.derkrikorian.skimouse.composables.Header
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 class LogActivity : ComponentActivity() {
-    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -60,31 +59,32 @@ class LogActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Transparent
                 ) {
-                    LogView("Android")
+                    LogView()
                 }
             }
         }
     }
 }
 
+enum class StringResource(val value: Int) {
+    LOG_FORM_1(R.string.log_form1),
+    LOG_FORM_2(R.string.log_form2),
+    LOG_FORM_3(R.string.log_form3),
+    BUTTON_LOG(R.string.Boutton_log),
+    BUTTON_SIGN(R.string.Boutton_sign)
+}
+
 @Composable
-fun LogView(name: String, modifier: Modifier = Modifier) {
+fun LogView() {
     val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
-    var isLogin by remember { mutableStateOf(true) }
     var passwordConfirmation by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
 
-    fun extractUsername(email: String): String {
-        val atIndex = email.indexOf('@')
-        return if (atIndex != -1) {
-            email.substring(0, atIndex)
-        } else {
-            email
-        }
-    }
+    var isLogin by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -113,7 +113,7 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
                     onValueChange = { email = it },
                     emailKeyBoard = true,
                     leadingIcon = Icons.Default.Email,
-                    labelId = R.string.log_form1,
+                    labelId = StringResource.LOG_FORM_1.value,
                     modifier = Modifier.fillMaxWidth()
                 )
                 CustomOutlinedTextField(
@@ -121,7 +121,7 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
                     onValueChange = { password = it },
                     hiddenPassword = true,
                     leadingIcon = Icons.Default.Lock,
-                    labelId = R.string.log_form2,
+                    labelId = StringResource.LOG_FORM_2.value,
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (!isLogin) {
@@ -129,7 +129,7 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
                         value = passwordConfirmation,
                         onValueChange = { passwordConfirmation = it },
                         leadingIcon = Icons.Default.Lock,
-                        labelId = R.string.log_form3,
+                        labelId = StringResource.LOG_FORM_3.value,
                         hiddenPassword = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -137,67 +137,15 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
 
                 Button(
                     onClick = {
-                        if (isLogin) {
-                            auth.signInWithEmailAndPassword(email, password)
-                                .addOnCompleteListener(context as Activity) { task ->
-                                    if (task.isSuccessful) {
-                                        Log.d(TAG, "signInWithEmail:success")
-                                        val currentUser = auth.currentUser
-                                        currentUser?.let {
-                                            email = it.email ?: ""
-                                            username = extractUsername(email)
-                                        }
-                                        val intent = Intent(context, MainActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        context.startActivity(intent)
-                                    } else {
-                                        Log.w(TAG, "signInWithEmail:failure", task.exception)
-                                        Toast.makeText(
-                                            context,
-                                            "Authentication failed.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                        } else {
-                            if (password == passwordConfirmation) {
-                                auth.createUserWithEmailAndPassword(email, password)
-                                    .addOnCompleteListener(context as Activity) { task ->
-                                        if (task.isSuccessful) {
-                                            val user = auth.currentUser
-                                            Log.d(TAG, "createUserWithEmail:success")
-                                            user?.uid?.let { uid ->
-                                                val database = Firebase.database
-                                                val usersRef = database.getReference("users")
-                                                val userData = mapOf(
-                                                    "email" to email,
-                                                    "uid" to uid,
-                                                )
-                                                usersRef.child(uid).setValue(userData)
-                                            }
-                                            val intent = Intent(context, MainActivity::class.java)
-                                            context.startActivity(intent)
-                                        } else {
-                                            Log.w(
-                                                TAG,
-                                                "createUserWithEmail:failure",
-                                                task.exception
-                                            )
-                                            Toast.makeText(
-                                                context,
-                                                "Registration failed.",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Passwords do not match.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                        userAuthentication(
+                            context = context,
+                            auth = auth,
+                            email = email,
+                            password = password,
+                            username = username,
+                            isLogin = isLogin,
+                            passwordConfirmation = passwordConfirmation
+                        )
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -208,8 +156,8 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
                     colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                 ) {
                     Text(
-                        text = if (isLogin) stringResource(id = R.string.Boutton_log) else stringResource(
-                            id = R.string.Boutton_sign
+                        text = if (isLogin) stringResource(id = StringResource.BUTTON_LOG.value) else stringResource(
+                            id = StringResource.BUTTON_SIGN.value
                         ),
                         style = TextStyle(
                             fontSize = 25.sp,
@@ -219,8 +167,8 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
                 }
 
                 Text(
-                    text = if (isLogin) stringResource(id = R.string.Boutton_sign) else stringResource(
-                        id = R.string.Boutton_log
+                    text = if (isLogin) stringResource(id = StringResource.BUTTON_SIGN.value) else stringResource(
+                        id = StringResource.BUTTON_LOG.value
                     ),
                     color = colorResource(id = R.color.grey),
                     modifier = Modifier
@@ -237,10 +185,83 @@ fun LogView(name: String, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview2() {
-    SkiMouseTheme {
-        LogView("Android")
+fun startMainActivity(context: Context) {
+    val intent = Intent(context, MainActivity::class.java)
+    intent.flags =
+        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    context.startActivity(intent)
+}
+
+fun extractUsername(email: String): String {
+    val atIndex = email.indexOf('@')
+    return if (atIndex != -1) {
+        email.substring(0, atIndex)
+    } else {
+        email
+    }
+}
+
+fun userAuthentication(
+    context: Context,
+    auth: FirebaseAuth,
+    email: String,
+    password: String,
+    username: String,
+    isLogin: Boolean,
+    passwordConfirmation: String? = null
+) {
+    if (isLogin) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(context as Activity) { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "signInWithEmail:success")
+                    val currentUser = auth.currentUser
+                    currentUser?.let {
+                        val userEmail = it.email ?: ""
+                        val username = extractUsername(userEmail)
+                        startMainActivity(context)
+                    }
+                } else {
+                    Log.w(TAG, "signInWithEmail:failure", task.exception)
+                    Toast.makeText(
+                        context,
+                        "Authentication failed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+    } else {
+        if (password == passwordConfirmation) {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(context as Activity) { task ->
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        Log.d(TAG, "createUserWithEmail:success")
+                        user?.uid?.let { uid ->
+                            val database = Firebase.database
+                            val usersRef = database.getReference("users")
+                            val userData = mapOf(
+                                "email" to email,
+                                "uid" to uid,
+                            )
+                            usersRef.child(uid).setValue(userData)
+                        }
+                        startMainActivity(context)
+                    } else {
+                        Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                        Toast.makeText(
+                            context,
+                            "Registration failed.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+        } else {
+            Toast.makeText(
+                context,
+                "Passwords do not match.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }

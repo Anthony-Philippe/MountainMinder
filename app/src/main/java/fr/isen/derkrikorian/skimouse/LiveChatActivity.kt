@@ -128,8 +128,7 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
 
                     Box(
                         modifier = Modifier
-                            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
-                            .padding(start = if (isUserMessage) 80.dp else 0.dp)
+                            .padding(start = 20.dp, bottom = 10.dp)
                             .clip(
                                 RoundedCornerShape(
                                     topStart = 48f,
