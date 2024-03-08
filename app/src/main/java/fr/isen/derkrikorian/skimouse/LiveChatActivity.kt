@@ -43,11 +43,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.Network.Comment
 import fr.isen.derkrikorian.skimouse.composables.Navbar
+import fr.isen.derkrikorian.skimouse.Network.Comment
+import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
-val chatMessagesRef = database.getReference("messages")
+val chatMessagesRef = NetworkConstants.LIVECHAT_DB
 
 class LiveChatActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

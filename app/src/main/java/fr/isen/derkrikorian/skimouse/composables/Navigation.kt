@@ -277,6 +277,7 @@ fun TopBar() {
                             .widthIn(min = 100.dp),
                         colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                     ) {
+
                         Text(
                             text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(
                                 R.string.ShowOpen

@@ -1,6 +1,7 @@
 package fr.isen.derkrikorian.skimouse
 
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -49,14 +50,15 @@ import fr.isen.derkrikorian.skimouse.Network.User
 import fr.isen.derkrikorian.skimouse.composables.TopBar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     private lateinit var database: DatabaseReference
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        database = FirebaseDatabase.getInstance().reference
+
         setContent {
-            database = FirebaseDatabase.getInstance().reference
             SkiMouseTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -67,15 +69,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        database = FirebaseDatabase.getInstance().reference
-
         writeTest()
         readTest()
     }
 
     private fun writeTest() {
         val user = User("Ada", "Lovelace", 1815)
-        user.firstName?.let { database.child("users").child(it).setValue(user) }
+        database.child("users").child(user.firstName ?: "").setValue(user)
     }
 
     private fun readTest() {
@@ -99,13 +99,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class LiftType {
-    TELECABINE,
-    TELESIEGE,
-    TELESKI,
-    TAPIS,
-}
-
 @Composable
 fun SlopeView(
     database: DatabaseReference,
@@ -114,8 +107,8 @@ fun SlopeView(
     searchQuery: String = "",
     showOpenOnly: Boolean = false
 ) {
-    val slopes = remember { mutableStateListOf<Slope>() }
     val context = LocalContext.current
+    val slopes = remember { mutableStateListOf<Slope>() }
     val slopesReference = database.child("slopes")
 
     LaunchedEffect(slopesReference) {
@@ -152,12 +145,7 @@ fun SlopeView(
                 modifier = Modifier
                     .padding(horizontal = 35.dp, vertical = 13.dp)
                     .clickable {
-                        val intent = Intent(context, DetailActivity::class.java)
-                        intent.putExtra("slope_name", slope.name)
-                        intent.putExtra("slope_color", slope.color ?: "")
-                        intent.putExtra("is_open", slope.status ?: false)
-                        intent.putExtra("slope_id", slope.id)
-                        intent.putExtra("item_Type", "slope")
+                        val intent = slope.createDetailIntent(context)
                         context.startActivity(intent)
                     }
             ) {
@@ -171,20 +159,7 @@ fun SlopeView(
                         .weight(1f)
                         .padding(start = 20.dp)
                 ) {
-                    Text(
-                        text = slope.name?.uppercase() ?: "No name",
-                        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(id = R.string.Color),
-                            modifier = Modifier.padding(end = 8.dp),
-                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        )
-                        Canvas(modifier = Modifier.size(12.dp)) {
-                            drawCircle(color = color)
-                        }
-                    }
+                    ItemDetailsView(item = slope, color = color)
                 }
                 Text(text = slope.status?.let {
                     if (it) stringResource(id = R.string.OpenStatus)
@@ -207,6 +182,7 @@ fun LiftView(
     val lifts = remember { mutableStateListOf<Lift>() }
     val liftsReference = database.child("lifts")
     val context = LocalContext.current
+
     LaunchedEffect(liftsReference) {
         liftsReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -227,6 +203,7 @@ fun LiftView(
             }
         })
     }
+
     LazyColumn(modifier = modifier.padding(innerPadding)) {
         items(lifts.filter {
             it.name?.contains(
@@ -238,13 +215,7 @@ fun LiftView(
                 modifier = Modifier
                     .padding(horizontal = 35.dp, vertical = 13.dp)
                     .clickable {
-                        val intent = Intent(context, DetailActivity::class.java)
-                        intent.putExtra("lift_Name", lift.name)
-                        intent.putExtra("connected_slope", lift.connectedSlope?.joinToString(", "))
-                        intent.putExtra("lift_Status", lift.status)
-                        intent.putExtra("lift_Type", lift.type)
-                        intent.putExtra("lift_id", lift.id)
-                        intent.putExtra("item_Type", "lift")
+                        val intent = lift.createDetailIntent(context)
                         context.startActivity(intent)
                     }
             ) {
@@ -258,17 +229,7 @@ fun LiftView(
                         .weight(1f)
                         .padding(start = 20.dp)
                 ) {
-                    Text(
-                        text = lift.name?.uppercase()
-                            ?: stringResource(id = R.string.UnknownStatus),
-                        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.LiftType) + " - " + (lift.type
-                            ?: stringResource(id = R.string.UnknownStatus)),
-                        modifier = Modifier.padding(end = 8.dp),
-                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    )
+                    ItemDetailsView(item = lift, color = null)
                 }
                 Text(text = lift.status?.let {
                     if (it) stringResource(id = R.string.OpenStatus)
@@ -276,6 +237,59 @@ fun LiftView(
                 } ?: stringResource(id = R.string.UnknownStatus))
             }
             Divider(color = Color.Gray)
+        }
+    }
+}
+
+fun Lift.createDetailIntent(context: Context): Intent {
+    val intent = Intent(context, DetailActivity::class.java)
+    intent.putExtra("lift_Name", this.name)
+    intent.putExtra("connected_slope", this.connectedSlope?.joinToString(", "))
+    intent.putExtra("lift_Status", this.status)
+    intent.putExtra("lift_Type", this.type)
+    intent.putExtra("lift_id", this.id)
+    intent.putExtra("item_Type", "lift")
+    return intent
+}
+
+fun Slope.createDetailIntent(context: Context): Intent {
+    val intent = Intent(context, DetailActivity::class.java)
+    intent.putExtra("slope_name", this.name)
+    intent.putExtra("slope_color", this.color ?: "")
+    intent.putExtra("is_open", this.status ?: false)
+    intent.putExtra("slope_id", this.id)
+    intent.putExtra("item_Type", "slope")
+    return intent
+}
+
+@Composable
+fun ItemDetailsView(item: Any, color: Color? = null) {
+    Column {
+        Text(
+            text = when (item) {
+                is Lift -> item.name?.uppercase() ?: stringResource(id = R.string.UnknownStatus)
+                is Slope -> item.name?.uppercase() ?: stringResource(id = R.string.UnknownStatus)
+                else -> stringResource(id = R.string.UnknownStatus)
+            },
+            style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = when (item) {
+                    is Lift -> stringResource(id = R.string.LiftType) + " - " + (item.type
+                        ?: stringResource(id = R.string.UnknownStatus))
+
+                    is Slope -> stringResource(id = R.string.Color)
+                    else -> ""
+                },
+                modifier = Modifier.padding(end = 8.dp),
+                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            )
+            if (item is Slope) {
+                Canvas(modifier = Modifier.size(12.dp)) {
+                    drawCircle(color = color ?: Color.Transparent)
+                }
+            }
         }
     }
 }
