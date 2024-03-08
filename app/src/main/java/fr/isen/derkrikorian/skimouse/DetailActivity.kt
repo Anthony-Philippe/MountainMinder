@@ -1,7 +1,9 @@
 package fr.isen.derkrikorian.skimouse
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -74,28 +76,11 @@ import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 val database = Firebase.database
 val commentsRef = database.getReference("comments")
 
-class DetailActivitySlope : ComponentActivity() {
+class DetailActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //slope
-        val slopeName = intent.getStringExtra("slope_name") ?: ""
-        val slopeColorString = intent.getStringExtra("slope_color") ?: ""
-        val isOpen = intent.getBooleanExtra("is_open", false)
-        val id = intent.getIntExtra("slope_id", 0)
-
-        //Lift
-        val itemType = intent.getStringExtra("item_type")
-        val liftName = intent.getStringExtra("lift_name") ?: ""
-        val liftType = intent.getStringExtra("lift_status") ?: ""
-        val liftisOpen = intent.getBooleanExtra("lift_is_open", false)
-
-        val slopeColor = if (slopeColorString.isNotEmpty()) {
-            parseColor(slopeColorString)
-        } else {
-            Color.Transparent
-        }
+        val intent = intent
 
         setContent {
             SkiMouseTheme {
@@ -108,24 +93,52 @@ class DetailActivitySlope : ComponentActivity() {
                             Navbar()
                         }
                     ) {
-                        if (itemType == "lift") {
-                            LiftDetails(
-                                name = liftName,
-                                type = liftType,
-                                liftisOpen = liftisOpen
-                            )
-                        } else {
-                            SlopeDetails(
-                                name = slopeName,
-                                color = slopeColor,
-                                isOpen = isOpen,
-                                id = id
-                            )
-                        }
+                        DetailView(intent = intent)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DetailView(intent: Intent){
+    val itemType = intent.getStringExtra("item_Type") ?: ""
+
+    //slope
+    val slopeName = intent.getStringExtra("slope_name") ?: ""
+    val slopeColorString = intent.getStringExtra("slope_color") ?: ""
+    val slopeStatus = intent.getBooleanExtra("is_open", false)
+    val slopeId = intent.getIntExtra("slope_id", 0)
+
+    //Lift
+    val liftName = intent.getStringExtra("lift_Name") ?: ""
+    val connectedSlopeList = intent.getStringArrayListExtra("connected_slope") ?: mutableListOf()
+    val liftStatus = intent.getBooleanExtra("lift_Status", false)
+    val liftType = intent.getStringExtra("lift_Type") ?: ""
+    val liftId = intent.getIntExtra("lift_id", 0)
+
+    val slopeColor = if (slopeColorString.isNotEmpty()) {
+        parseColor(slopeColorString)
+    } else {
+        Color.Transparent
+    }
+
+    if (itemType == "lift") {
+        LiftDetails(
+            name = liftName,
+            connectedSlopeList = connectedSlopeList,
+            type = liftType,
+            liftIsOpen = liftStatus,
+            id = liftId
+        )
+    } else if (itemType == "slope"){
+        SlopeDetails(
+            name = slopeName,
+            color = slopeColor,
+            isOpen = slopeStatus,
+            id = slopeId
+        )
     }
 }
 
@@ -141,19 +154,14 @@ fun SlopeDetails(
     modifier: Modifier = Modifier,
     id: Int
 ) {
-    var commentaire by remember { mutableStateOf("") }
     val colorHex = "#${Integer.toHexString(color.toArgb()).substring(2)}"
-    var note: Int by remember { mutableIntStateOf(0) }
     val slopesReference = FirebaseDatabase.getInstance().getReference("slopes")
     val slopeReference = slopesReference.child(id.toString())
     val context = LocalContext.current
     var openState by remember { mutableStateOf(isOpen) }
-    var open = ""
-    if (isOpen == true) {
-        open = "Ouverte"
-    } else {
-        open = "Fermée"
-    }
+
+    var userComment by remember { mutableStateOf("") }
+    var rating by remember { mutableIntStateOf(0) }
 
     val comments = remember { mutableStateListOf<Comment>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
@@ -192,9 +200,6 @@ fun SlopeDetails(
             commentsRef.push().setValue(commentWithUsername)
         }
     }
-
-    var userComment by remember { mutableStateOf("") }
-    var rating by remember { mutableIntStateOf(0) }
 
     LazyColumn(
         modifier = modifier.padding(top = 75.dp),
@@ -453,17 +458,21 @@ fun SlopeDetails(
 @Composable
 fun LiftDetails(
     name: String,
+    connectedSlopeList: List<String>,
     type: String,
-    liftisOpen: Boolean,
-    modifier: Modifier = Modifier
+    liftIsOpen: Boolean,
+    modifier: Modifier = Modifier,
+    id: Int
 ) {
-    var commentaire by remember { mutableStateOf("") }
-    var note: Int by remember { mutableStateOf(0) }
-    var open = if (liftisOpen) "Ouverte" else "Fermée"
-    val comments = remember { mutableStateListOf<Comment>() }
+    val liftsReference = FirebaseDatabase.getInstance().getReference("lifts")
+    val liftReference = liftsReference.child(id.toString())
     val context = LocalContext.current
-    var openState by remember { mutableStateOf(liftisOpen) }
+    var openState by remember { mutableStateOf(liftIsOpen) }
 
+    var commentaire by remember { mutableStateOf("") }
+    var rating by remember { mutableIntStateOf(0) }
+
+    val comments = remember { mutableStateListOf<Comment>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             val newComments = mutableListOf<Comment>()
@@ -501,9 +510,6 @@ fun LiftDetails(
             commentsRef.push().setValue(commentWithUsername)
         }
     }
-
-    var userComment by remember { mutableStateOf("") }
-    var rating by remember { mutableStateOf(0) }
 
     LazyColumn(
         modifier = modifier.padding(top = 75.dp),
@@ -577,6 +583,7 @@ fun LiftDetails(
                     checked = openState,
                     onCheckedChange = { isChecked ->
                         openState = isChecked
+                        liftReference.child("status").setValue(isChecked)
                         Toast.makeText(context, "Merci pour l'information", Toast.LENGTH_SHORT)
                             .show()
                     },
@@ -606,40 +613,49 @@ fun LiftDetails(
         }
 
         item {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+            Log.d("LiftDetails", "connectedSlopeList: $connectedSlopeList")
+            if (connectedSlopeList.isEmpty()) {
                 Text(
-                    text = "Pistes desservies",
-                    fontSize = 22.sp,
-                    modifier = Modifier.padding(8.dp)
+                    text = "Aucune piste desservie",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    color = colorResource(id = R.color.orange)
                 )
-                LazyRow {
-                    val pistes = listOf(
-                        "La pistache",
-                        "Le floriant",
-                        "Capibara",
-                        "Anna",
-                        "Dandelot",
-                        "Barabara",
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Pistes desservies",
+                        fontSize = 22.sp,
+                        modifier = Modifier.padding(8.dp)
                     )
-                    items(pistes) { piste ->
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(color = colorResource(id = R.color.orange).copy(alpha = 0.5f)),
-                        ) {
-                            Text(
-                                text = piste,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(4.dp),
-                                textAlign = TextAlign.Center
-                            )
+                    LazyRow {
+                        items(connectedSlopeList) { slope ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(
+                                        color = colorResource(id = R.color.orange).copy(
+                                            alpha = 0.5f
+                                        )
+                                    ),
+                            ) {
+                                Text(
+                                    text = slope,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(4.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
