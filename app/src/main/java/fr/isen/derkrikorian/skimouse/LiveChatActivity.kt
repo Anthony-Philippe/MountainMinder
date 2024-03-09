@@ -43,9 +43,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.composables.Navbar
-import fr.isen.derkrikorian.skimouse.Network.Comment
+import fr.isen.derkrikorian.skimouse.Network.Message
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 val chatMessagesRef = NetworkConstants.LIVECHAT_DB
@@ -76,18 +76,18 @@ class LiveChatActivity : ComponentActivity() {
 @Composable
 fun LiveChatView(name: String, modifier: Modifier = Modifier) {
 
-    val comments = remember { mutableStateListOf<Comment>() }
+    val messages = remember { mutableStateListOf<Message>() }
     chatMessagesRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newComments = mutableListOf<Comment>()
+            val newMessages = mutableListOf<Message>()
             for (childSnapshot in snapshot.children) {
-                val comment = childSnapshot.getValue(Comment::class.java)
-                comment?.let {
-                    newComments.add(it)
+                val message = childSnapshot.getValue(Message::class.java)
+                message?.let {
+                    newMessages.add(it)
                 }
             }
-            comments.clear()
-            comments.addAll(newComments)
+            messages.clear()
+            messages.addAll(newMessages)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -105,11 +105,11 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     val username = extractUsername(currentUser?.email ?: "")
-    fun writeComment(comment: Comment) {
+    fun writeComment(message: Message) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val username = extractUsername(it.email ?: "")
-            val commentWithUsername = comment.copy(userName = username)
+            val commentWithUsername = message.copy(userName = username)
             chatMessagesRef.push().setValue(commentWithUsername)
         }
     }
@@ -124,7 +124,7 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
             reverseLayout = true,
         ) {
             item{
-                comments.asReversed().forEach { comment ->
+                messages.asReversed().forEach { comment ->
                     val isUserMessage = comment.userName == username
 
                     Box(
@@ -192,12 +192,12 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newComment = Comment(
+                            val newMessage = Message(
                                 userName = "userName",
                                 comment = userComment,
                                 timestamp = System.currentTimeMillis()
                             )
-                            writeComment(newComment)
+                            writeComment(newMessage)
                             userComment = ""
                         }
                     ) {
