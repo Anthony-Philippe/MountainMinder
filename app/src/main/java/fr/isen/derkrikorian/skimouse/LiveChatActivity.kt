@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
@@ -50,8 +49,8 @@ import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
 val chatMessagesRef = NetworkConstants.LIVECHAT_DB
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class LiveChatActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -65,7 +64,7 @@ class LiveChatActivity : ComponentActivity() {
                             Navbar()
                         }
                     ) {
-                        LiveChatView("Android")
+                        LiveChatView()
                     }
                 }
             }
@@ -74,8 +73,7 @@ class LiveChatActivity : ComponentActivity() {
 }
 
 @Composable
-fun LiveChatView(name: String, modifier: Modifier = Modifier) {
-
+fun LiveChatView(modifier: Modifier = Modifier) {
     val messages = remember { mutableStateListOf<Message>() }
     chatMessagesRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -94,14 +92,6 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
             // Handle error
         }
     })
-    fun extractUsername(email: String): String {
-        val atIndex = email.indexOf('@')
-        return if (atIndex != -1) {
-            email.substring(0, atIndex)
-        } else {
-            email
-        }
-    }
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     val username = extractUsername(currentUser?.email ?: "")
@@ -210,13 +200,5 @@ fun LiveChatView(name: String, modifier: Modifier = Modifier) {
                 }
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview4() {
-    SkiMouseTheme {
-        LiveChatView("Android")
     }
 }

@@ -1,8 +1,8 @@
 package fr.isen.derkrikorian.skimouse.composables
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -60,10 +61,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import fr.isen.derkrikorian.skimouse.ItineraryActivity
 import fr.isen.derkrikorian.skimouse.LiftView
 import fr.isen.derkrikorian.skimouse.LiveChatActivity
+import fr.isen.derkrikorian.skimouse.LogActivity
 import fr.isen.derkrikorian.skimouse.MainActivity
 import fr.isen.derkrikorian.skimouse.R
 import fr.isen.derkrikorian.skimouse.SlopeView
@@ -143,81 +146,31 @@ fun TopBar() {
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .padding(vertical = 10.dp)
-                                    .clickable {
-                                        val intent = Intent(context, LiveChatActivity::class.java)
-                                        context.startActivity(intent)
-                                    }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Send,
-                                    contentDescription = "Live Chat",
-                                    tint = Color.White
-                                )
-                                Text(
-                                    "Live Chat",
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-                            }
+                            DrawerMenuItem(
+                                icon = Icons.Outlined.Send,
+                                text = "Live Chat",
+                                onClickAction = {
+                                    val intent = Intent(context, LiveChatActivity::class.java)
+                                    context.startActivity(intent)
+                                }
+                            )
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .padding(vertical = 10.dp)
-                                    .clickable {
-                                        val intent = Intent(context, ItineraryActivity::class.java)
-                                        context.startActivity(intent)
-                                    }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.LocationOn,
-                                    contentDescription = "Leave Icon",
-                                    tint = Color.White
-                                )
-                                Text(
-                                    "Itinéraires",
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-                            }
+                            DrawerMenuItem(
+                                icon = Icons.Outlined.LocationOn,
+                                text = "Itinéraires",
+                                onClickAction = {
+                                    val intent = Intent(context, ItineraryActivity::class.java)
+                                    context.startActivity(intent)
+                                }
+                            )
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .padding(vertical = 10.dp)
-                                    .clickable {
-                                        Toast
-                                            .makeText(context, "Logout", Toast.LENGTH_SHORT)
-                                            .show()
-                                    }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.ExitToApp,
-                                    contentDescription = "Leave Icon",
-                                    tint = Color.White
-                                )
-                                Text(
-                                    "Logout",
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-                            }
+                            DrawerMenuItem(
+                                icon = Icons.Outlined.ExitToApp,
+                                text = "Logout",
+                                onClickAction = {
+                                    logoutUser(context)
+                                }
+                            )
                         }
                     }
                 },
@@ -310,5 +263,42 @@ fun TopBar() {
                 }
             }
         }
+    }
+}
+
+fun logoutUser(context: Context) {
+    FirebaseAuth.getInstance().signOut()
+    val intent = Intent(context, LogActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    context.startActivity(intent)
+}
+
+@Composable
+fun DrawerMenuItem(
+    icon: ImageVector,
+    text: String,
+    onClickAction: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(vertical = 10.dp)
+            .clickable(onClick = onClickAction)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        Text(
+            text = text,
+            style = TextStyle(
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
     }
 }

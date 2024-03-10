@@ -75,8 +75,8 @@ import java.util.Locale
 
 val commentsRef = NetworkConstants.COMMENTS_DB
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class DetailActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = intent
@@ -104,13 +104,13 @@ class DetailActivity : ComponentActivity() {
 fun DetailView(intent: Intent) {
     val itemType = intent.getStringExtra("item_Type") ?: ""
 
-    //slope
+    // Slope details
     val slopeName = intent.getStringExtra("slope_name") ?: ""
     val slopeColorString = intent.getStringExtra("slope_color") ?: ""
     val slopeStatus = intent.getBooleanExtra("slope_Status", false)
     val slopeId = intent.getIntExtra("slope_id", 0)
 
-    //Lift
+    // Lift details
     val liftName = intent.getStringExtra("lift_Name") ?: ""
     val connectedSlopeList: ArrayList<String>? = intent.getStringArrayListExtra("connected_Slope")
     val liftStatus = intent.getBooleanExtra("lift_Status", false)
@@ -139,10 +139,6 @@ fun DetailView(intent: Intent) {
             id = slopeId
         )
     }
-}
-
-fun parseColor(colorString: String): Color {
-    return Color(android.graphics.Color.parseColor(colorString))
 }
 
 @Composable
@@ -182,14 +178,6 @@ fun SlopeDetails(
             // Handle error
         }
     })
-    fun extractUsername(email: String): String {
-        val atIndex = email.indexOf('@')
-        return if (atIndex != -1) {
-            email.substring(0, atIndex)
-        } else {
-            email
-        }
-    }
 
     fun writeComment(message: Message, slopeName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -491,15 +479,6 @@ fun LiftDetails(
             // Handle error
         }
     })
-
-    fun extractUsername(email: String): String {
-        val atIndex = email.indexOf('@')
-        return if (atIndex != -1) {
-            email.substring(0, atIndex)
-        } else {
-            email
-        }
-    }
 
     fun writeComment(message: Message, liftName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -854,4 +833,8 @@ fun fetchSlopeDetails(slopeName: String, context: Context) {
             // Handle error
         }
     })
+}
+
+fun parseColor(colorString: String): Color {
+    return Color(android.graphics.Color.parseColor(colorString))
 }

@@ -35,14 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class ItineraryActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -56,7 +55,7 @@ class ItineraryActivity : ComponentActivity() {
                             Navbar()
                         }
                     ) {
-                        ItineraryView("Android")
+                        ItineraryView()
                         ItineraryDetails()
                     }
                 }
@@ -66,7 +65,7 @@ class ItineraryActivity : ComponentActivity() {
 }
 
 @Composable
-fun ItineraryView(name: String) {
+fun ItineraryView() {
     var departInput by remember { mutableStateOf("") }
     var destinationInput by remember { mutableStateOf("") }
 
@@ -196,13 +195,5 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
             )
         }
         Text("\uD83D\uDEA9")
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview3() {
-    SkiMouseTheme {
-        ItineraryView("Android")
     }
 }
