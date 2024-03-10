@@ -248,7 +248,7 @@ fun Slope.createDetailIntent(context: Context): Intent {
     val intent = Intent(context, DetailActivity::class.java)
     intent.putExtra("slope_name", this.name)
     intent.putExtra("slope_color", this.color ?: "")
-    intent.putExtra("is_open", this.status ?: false)
+    intent.putExtra("slope_Status", this.status)
     intent.putExtra("slope_id", this.id)
     intent.putExtra("item_Type", "slope")
     return intent

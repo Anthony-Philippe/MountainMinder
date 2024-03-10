@@ -1,6 +1,7 @@
 package fr.isen.derkrikorian.skimouse
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -106,7 +107,7 @@ fun DetailView(intent: Intent) {
     //slope
     val slopeName = intent.getStringExtra("slope_name") ?: ""
     val slopeColorString = intent.getStringExtra("slope_color") ?: ""
-    val slopeStatus = intent.getBooleanExtra("is_open", false)
+    val slopeStatus = intent.getBooleanExtra("slope_Status", false)
     val slopeId = intent.getIntExtra("slope_id", 0)
 
     //Lift
@@ -646,10 +647,7 @@ fun LiftDetails(
                                         color = colorResource(id = R.color.orange).copy(alpha = 0.5f)
                                     )
                                     .clickable {
-                                        val intent = Intent(context, DetailActivity::class.java)
-                                        intent.putExtra("slope_name", slope)
-                                        intent.putExtra("item_Type", "slope")
-                                        context.startActivity(intent)
+                                        fetchSlopeDetails(slope, context)
                                     },
                             ) {
                                 Text(
@@ -809,4 +807,51 @@ fun LiftDetails(
             }
         }
     }
+}
+
+fun fetchSlopeDetails(slopeName: String, context: Context) {
+    val slopesReference = FirebaseDatabase.getInstance().getReference("slopes")
+
+    slopesReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            var slopeId = ""
+            for (slopeSnapshot in dataSnapshot.children) {
+                val name = slopeSnapshot.child("name").getValue(String::class.java) ?: ""
+                if (name == slopeName) {
+                    slopeId = slopeSnapshot.key ?: ""
+                    break
+                }
+            }
+
+            if (slopeId.isNotEmpty()) {
+                val slopeReference = slopesReference.child(slopeId)
+                slopeReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(slopeDataSnapshot: DataSnapshot) {
+                        val slopeColorString =
+                            slopeDataSnapshot.child("color").getValue(String::class.java) ?: ""
+                        val slopeStatus =
+                            slopeDataSnapshot.child("status").getValue(Boolean::class.java) ?: false
+
+                        val intent = Intent(context, DetailActivity::class.java)
+                        intent.putExtra("slope_name", slopeName)
+                        intent.putExtra("slope_color", slopeColorString)
+                        intent.putExtra("slope_Status", slopeStatus)
+                        intent.putExtra("slope_id", slopeId.toInt())
+                        intent.putExtra("item_Type", "slope")
+                        context.startActivity(intent)
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        // Handle error
+                    }
+                })
+            } else {
+                Toast.makeText(context, "Piste non trouvée", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun onCancelled(databaseError: DatabaseError) {
+            // Handle error
+        }
+    })
 }
