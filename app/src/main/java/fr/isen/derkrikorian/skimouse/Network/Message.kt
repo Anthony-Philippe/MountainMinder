@@ -1,7 +1,11 @@
 package fr.isen.derkrikorian.skimouse.Network
 
 data class Message(
-    val username: String,
-    val content: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val userId: String = "",
+    val userName: String = "",
+    val comment: String = "",
+    val timestamp: Long = 0,
+    val rating: Int = 0,
+    val slopeName: String = "",
+    val liftName: String = ""
 )

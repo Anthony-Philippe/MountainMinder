@@ -1,9 +1,9 @@
 package fr.isen.derkrikorian.skimouse
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -66,11 +66,12 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.composables.Navbar
-import fr.isen.derkrikorian.skimouse.Network.Comment
+import fr.isen.derkrikorian.skimouse.Network.Message
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
+import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
+import java.util.Locale
 
 val commentsRef = NetworkConstants.COMMENTS_DB
 
@@ -100,18 +101,18 @@ class DetailActivity : ComponentActivity() {
 }
 
 @Composable
-fun DetailView(intent: Intent){
+fun DetailView(intent: Intent) {
     val itemType = intent.getStringExtra("item_Type") ?: ""
 
     //slope
     val slopeName = intent.getStringExtra("slope_name") ?: ""
     val slopeColorString = intent.getStringExtra("slope_color") ?: ""
-    val slopeStatus = intent.getBooleanExtra("is_open", false)
+    val slopeStatus = intent.getBooleanExtra("slope_Status", false)
     val slopeId = intent.getIntExtra("slope_id", 0)
 
     //Lift
     val liftName = intent.getStringExtra("lift_Name") ?: ""
-    val connectedSlopeList = intent.getStringArrayListExtra("connected_slope") ?: mutableListOf()
+    val connectedSlopeList: ArrayList<String>? = intent.getStringArrayListExtra("connected_Slope")
     val liftStatus = intent.getBooleanExtra("lift_Status", false)
     val liftType = intent.getStringExtra("lift_Type") ?: ""
     val liftId = intent.getIntExtra("lift_id", 0)
@@ -130,7 +131,7 @@ fun DetailView(intent: Intent){
             liftIsOpen = liftStatus,
             id = liftId
         )
-    } else if (itemType == "slope"){
+    } else if (itemType == "slope") {
         SlopeDetails(
             name = slopeName,
             color = slopeColor,
@@ -161,20 +162,20 @@ fun SlopeDetails(
     var userComment by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(0) }
 
-    val comments = remember { mutableStateListOf<Comment>() }
+    val messages = remember { mutableStateListOf<Message>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newComments = mutableListOf<Comment>()
+            val newMessages = mutableListOf<Message>()
             for (childSnapshot in snapshot.children) {
-                val comment = childSnapshot.getValue(Comment::class.java)
-                comment?.let {
+                val message = childSnapshot.getValue(Message::class.java)
+                message?.let {
                     if (it.slopeName == name) {
-                        newComments.add(it)
+                        newMessages.add(it)
                     }
                 }
             }
-            comments.clear()
-            comments.addAll(newComments)
+            messages.clear()
+            messages.addAll(newMessages)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -190,11 +191,11 @@ fun SlopeDetails(
         }
     }
 
-    fun writeComment(comment: Comment, slopeName: String) {
+    fun writeComment(message: Message, slopeName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val username = extractUsername(it.email ?: "")
-            val commentWithUsername = comment.copy(userName = username, slopeName = slopeName)
+            val commentWithUsername = message.copy(userName = username, slopeName = slopeName)
             commentsRef.push().setValue(commentWithUsername)
         }
     }
@@ -363,14 +364,14 @@ fun SlopeDetails(
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newComment = Comment(
+                            val newMessage = Message(
                                 userId = "userId",
                                 userName = "userName",
                                 comment = userComment,
                                 timestamp = System.currentTimeMillis(),
                                 rating = rating
                             )
-                            writeComment(newComment, name)
+                            writeComment(newMessage, name)
                             userComment = ""
                         }
                     ) {
@@ -390,7 +391,7 @@ fun SlopeDetails(
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
             )
 
-            if (comments.isEmpty()) {
+            if (messages.isEmpty()) {
                 Text(
                     text = "Aucun avis sur cette piste",
                     fontSize = 16.sp,
@@ -401,7 +402,7 @@ fun SlopeDetails(
                     color = colorResource(id = R.color.orange)
                 )
             } else {
-                comments.forEach { comment ->
+                messages.forEach { comment ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -456,7 +457,7 @@ fun SlopeDetails(
 @Composable
 fun LiftDetails(
     name: String,
-    connectedSlopeList: List<String>,
+    connectedSlopeList: ArrayList<String>?,
     type: String,
     liftIsOpen: Boolean,
     modifier: Modifier = Modifier,
@@ -470,20 +471,20 @@ fun LiftDetails(
     var commentaire by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(0) }
 
-    val comments = remember { mutableStateListOf<Comment>() }
+    val messages = remember { mutableStateListOf<Message>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newComments = mutableListOf<Comment>()
+            val newMessages = mutableListOf<Message>()
             for (childSnapshot in snapshot.children) {
-                val comment = childSnapshot.getValue(Comment::class.java)
-                comment?.let {
+                val message = childSnapshot.getValue(Message::class.java)
+                message?.let {
                     if (it.liftName == name) {
-                        newComments.add(it)
+                        newMessages.add(it)
                     }
                 }
             }
-            comments.clear()
-            comments.addAll(newComments)
+            messages.clear()
+            messages.addAll(newMessages)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -500,17 +501,19 @@ fun LiftDetails(
         }
     }
 
-    fun writeComment(comment: Comment, liftName: String) {
+    fun writeComment(message: Message, liftName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val username = extractUsername(it.email ?: "")
-            val commentWithUsername = comment.copy(userName = username, liftName = liftName)
+            val commentWithUsername = message.copy(userName = username, liftName = liftName)
             commentsRef.push().setValue(commentWithUsername)
         }
     }
 
     LazyColumn(
-        modifier = modifier.padding(top = 75.dp),
+        modifier = modifier
+            .padding(top = 75.dp)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
@@ -540,7 +543,7 @@ fun LiftDetails(
                             fontSize = 24.sp
                         )
                         Text(
-                            text = type,
+                            text = type.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
                             fontSize = 25.sp
                         )
                     }
@@ -611,8 +614,7 @@ fun LiftDetails(
         }
 
         item {
-            Log.d("LiftDetails", "connectedSlopeList: $connectedSlopeList")
-            if (connectedSlopeList.isEmpty()) {
+            if (connectedSlopeList.isNullOrEmpty()) {
                 Text(
                     text = "Aucune piste desservie",
                     fontSize = 16.sp,
@@ -642,10 +644,11 @@ fun LiftDetails(
                                     .padding(horizontal = 4.dp)
                                     .clip(RoundedCornerShape(5.dp))
                                     .background(
-                                        color = colorResource(id = R.color.orange).copy(
-                                            alpha = 0.5f
-                                        )
-                                    ),
+                                        color = colorResource(id = R.color.orange).copy(alpha = 0.5f)
+                                    )
+                                    .clickable {
+                                        fetchSlopeDetails(slope, context)
+                                    },
                             ) {
                                 Text(
                                     text = slope,
@@ -716,14 +719,14 @@ fun LiftDetails(
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newComment = Comment(
+                            val newMessage = Message(
                                 userId = "userId",
                                 userName = "userName",
                                 comment = commentaire,
                                 timestamp = System.currentTimeMillis(),
                                 rating = rating
                             )
-                            writeComment(newComment, name)
+                            writeComment(newMessage, name)
                             commentaire = ""
                         }
                     ) {
@@ -743,7 +746,7 @@ fun LiftDetails(
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
             )
 
-            if (comments.isEmpty()) {
+            if (messages.isEmpty()) {
                 Text(
                     text = "Aucun avis sur cette remontée",
                     fontSize = 16.sp,
@@ -754,7 +757,7 @@ fun LiftDetails(
                     color = colorResource(id = R.color.orange)
                 )
             } else {
-                comments.forEach { comment ->
+                messages.forEach { comment ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -804,4 +807,51 @@ fun LiftDetails(
             }
         }
     }
+}
+
+fun fetchSlopeDetails(slopeName: String, context: Context) {
+    val slopesReference = FirebaseDatabase.getInstance().getReference("slopes")
+
+    slopesReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            var slopeId = ""
+            for (slopeSnapshot in dataSnapshot.children) {
+                val name = slopeSnapshot.child("name").getValue(String::class.java) ?: ""
+                if (name == slopeName) {
+                    slopeId = slopeSnapshot.key ?: ""
+                    break
+                }
+            }
+
+            if (slopeId.isNotEmpty()) {
+                val slopeReference = slopesReference.child(slopeId)
+                slopeReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(slopeDataSnapshot: DataSnapshot) {
+                        val slopeColorString =
+                            slopeDataSnapshot.child("color").getValue(String::class.java) ?: ""
+                        val slopeStatus =
+                            slopeDataSnapshot.child("status").getValue(Boolean::class.java) ?: false
+
+                        val intent = Intent(context, DetailActivity::class.java)
+                        intent.putExtra("slope_name", slopeName)
+                        intent.putExtra("slope_color", slopeColorString)
+                        intent.putExtra("slope_Status", slopeStatus)
+                        intent.putExtra("slope_id", slopeId.toInt())
+                        intent.putExtra("item_Type", "slope")
+                        context.startActivity(intent)
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        // Handle error
+                    }
+                })
+            } else {
+                Toast.makeText(context, "Piste non trouvée", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun onCancelled(databaseError: DatabaseError) {
+            // Handle error
+        }
+    })
 }
