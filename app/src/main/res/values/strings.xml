@@ -17,8 +17,10 @@
     <string name="Status">Etat</string>
     <string name="LiftType">Type</string>
     <string name="SearchPlaceholder">Recherchez</string>
-    <string name="ShowAll">Afficher toutes les pistes</string>
-    <string name="ShowOpen">Afficher seulement les pistes ouvertes</string>
+    <string name="ShowAllLifts">Afficher toutes les remontées</string>
+    <string name="ShowOpenLifts">Afficher seulement les remontées ouvertes</string>
+    <string name="ShowAllSlopes">Afficher toutes les pistes</string>
+    <string name="ShowOpenSlopes">Afficher seulement les pistes ouvertes</string>
     <string name="title_activity_detail">DetailActivity</string>
     <string name="title_activity_detail_slope">DetailActivitySlope</string>
     <string name="title_activity_chat">ChatActivity</string>

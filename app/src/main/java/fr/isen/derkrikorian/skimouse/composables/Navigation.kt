@@ -231,12 +231,23 @@ fun TopBar() {
                         colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                     ) {
 
-                        Text(
-                            text = if (showOpenOnly) stringResource(R.string.ShowAll) else stringResource(
-                                R.string.ShowOpen
-                            ),
-                            style = button,
-                        )
+                        val currentRoute = "SlopeView"
+                        if (currentRoute == "SlopeView") {
+                            Text(
+                                text = if (showOpenOnly) stringResource(R.string.ShowAllSlopes) else stringResource(
+                                    R.string.ShowOpenSlopes
+                                ),
+                                style = button,
+                            )
+                        }
+                        else {
+                            Text(
+                                text = if (showOpenOnly) stringResource(R.string.ShowAllLifts) else stringResource(
+                                    R.string.ShowOpenLifts
+                                ),
+                                style = button,
+                            )
+                        }
                     }
                 }
             },
