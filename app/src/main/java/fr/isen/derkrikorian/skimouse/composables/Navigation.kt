@@ -117,6 +117,7 @@ fun TopBar() {
     val logo: Painter = painterResource(id = R.drawable.logo)
     val navController = rememberNavController()
     val items = listOf("SlopeView", "LiftView")
+    val currentPage = navController.currentBackStackEntryAsState().value?.destination?.route ?: items.first()
     var searchQuery by remember { mutableStateOf("") }
     var showOpenOnly by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -199,7 +200,7 @@ fun TopBar() {
                             Icon(
                                 Icons.Outlined.Menu,
                                 contentDescription = "Profile Icon",
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(65.dp)
                             )
                         }
                         CustomOutlinedTextField(
@@ -208,7 +209,7 @@ fun TopBar() {
                             labelId = R.string.SearchPlaceholder,
                             leadingIcon = Icons.Outlined.Search,
                             modifier = Modifier
-                                .height(40.dp)
+                                .height(65.dp)
                                 .padding(bottom = 8.dp),
                             showPlaceholder = false,
                             isSearchBar = true
@@ -217,7 +218,7 @@ fun TopBar() {
                             painter = logo,
                             contentDescription = "Logo",
                             modifier = Modifier
-                                .size(55.dp)
+                                .size(65.dp)
                                 .align(Alignment.CenterVertically)
                         )
                     }
@@ -230,24 +231,16 @@ fun TopBar() {
                             .widthIn(min = 100.dp),
                         colors = ButtonDefaults.buttonColors(colorResource(id = R.color.orange))
                     ) {
+                        val buttonText = when (currentPage) {
+                            "SlopeView" -> if (showOpenOnly) stringResource(R.string.ShowAllSlopes) else stringResource(R.string.ShowOpenSlopes)
+                            "LiftView" -> if (showOpenOnly) stringResource(R.string.ShowAllLifts) else stringResource(R.string.ShowOpenLifts)
+                            else -> ""
+                        }
 
-                        val currentRoute = "SlopeView"
-                        if (currentRoute == "SlopeView") {
-                            Text(
-                                text = if (showOpenOnly) stringResource(R.string.ShowAllSlopes) else stringResource(
-                                    R.string.ShowOpenSlopes
-                                ),
-                                style = button,
-                            )
-                        }
-                        else {
-                            Text(
-                                text = if (showOpenOnly) stringResource(R.string.ShowAllLifts) else stringResource(
-                                    R.string.ShowOpenLifts
-                                ),
-                                style = button,
-                            )
-                        }
+                        Text(
+                            text = buttonText,
+                            style = button,
+                        )
                     }
                 }
             },
