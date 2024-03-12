@@ -43,7 +43,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.Network.Message
+import fr.isen.derkrikorian.skimouse.Network.MessageChat
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
@@ -75,18 +75,18 @@ class LiveChatActivity : ComponentActivity() {
 
 @Composable
 fun LiveChatView(modifier: Modifier = Modifier) {
-    val messages = remember { mutableStateListOf<Message>() }
+    val chats = remember { mutableStateListOf<MessageChat>() }
     chatMessagesRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newMessages = mutableListOf<Message>()
+            val newChat = mutableListOf<MessageChat>()
             for (childSnapshot in snapshot.children) {
-                val message = childSnapshot.getValue(Message::class.java)
-                message?.let {
-                    newMessages.add(it)
+                val chat = childSnapshot.getValue(MessageChat::class.java)
+                chat?.let {
+                    newChat.add(it)
                 }
             }
-            messages.clear()
-            messages.addAll(newMessages)
+            chats.clear()
+            chats.addAll(newChat)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -96,17 +96,17 @@ fun LiveChatView(modifier: Modifier = Modifier) {
 
     val currentUser = FirebaseAuth.getInstance().currentUser
     val username = extractUsername(currentUser?.email ?: "")
-    fun writeComment(message: Message) {
-        if (message.comment.isBlank()) return
+    fun writeChat(chat: MessageChat) {
+        if (chat.comment.isBlank()) return
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val username = extractUsername(it.email ?: "")
-            val commentWithUsername = message.copy(userName = username)
+            val commentWithUsername = chat.copy(userName = username)
             chatMessagesRef.push().setValue(commentWithUsername)
         }
     }
 
-    var userComment by remember { mutableStateOf("") }
+    var userChat by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -118,8 +118,8 @@ fun LiveChatView(modifier: Modifier = Modifier) {
             reverseLayout = true,
         ) {
             item {
-                messages.asReversed().forEach { comment ->
-                    val isUserMessage = comment.userName == username
+                chats.asReversed().forEach { chat ->
+                    val isUserMessage = chat.userName == username
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = if (isUserMessage) {
@@ -152,12 +152,12 @@ fun LiveChatView(modifier: Modifier = Modifier) {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "${comment.userName}",
+                                        text = "${chat.userName}",
                                         fontSize = 16.sp
                                     )
                                 }
                                 Text(
-                                    text = comment.comment,
+                                    text = chat.comment,
                                     fontSize = 15.sp,
                                 )
                             }
@@ -173,8 +173,8 @@ fun LiveChatView(modifier: Modifier = Modifier) {
                 .padding(8.dp)
         ) {
             OutlinedTextField(
-                value = userComment,
-                onValueChange = { userComment = it },
+                value = userChat,
+                onValueChange = { userChat = it },
                 label = { Text("Ecrire un message") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -194,13 +194,13 @@ fun LiveChatView(modifier: Modifier = Modifier) {
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newMessage = Message(
+                            val newChat = MessageChat(
                                 userName = "userName",
-                                comment = userComment,
+                                comment = userChat,
                                 timestamp = System.currentTimeMillis()
                             )
-                            writeComment(newMessage)
-                            userComment = ""
+                            writeChat(newChat)
+                            userChat = ""
                         }
                     ) {
                         Icon(

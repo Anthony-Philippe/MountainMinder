@@ -73,17 +73,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun writeTest() {
-        val user = User("Ada", "Lovelace", 1815)
-        database.child("users").child(user.firstName ?: "").setValue(user)
+        val user = User("Ada", "anna@gmail.com")
+        database.child("users").child("5vQZ1gTMI1ZDnJYSY7PRpCAvvai2").setValue(user)
     }
 
     private fun readTest() {
-        val userReference = database.child("users").child("Ada")
+        val userReference = database.child("users").child("5vQZ1gTMI1ZDnJYSY7PRpCAvvai2")
 
         userReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val user = dataSnapshot.getValue(User::class.java)
-                Log.d(TAG, "User is: ${user?.firstName} ${user?.lastName}")
+                Log.d(TAG, "User is: ${user?.username} ${user?.email}")
             }
 
             override fun onCancelled(databaseError: DatabaseError) {

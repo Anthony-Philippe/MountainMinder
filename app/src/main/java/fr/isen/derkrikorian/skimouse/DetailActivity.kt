@@ -353,7 +353,6 @@ fun SlopeDetails(
                     IconButton(
                         onClick = {
                             val newMessage = Message(
-                                userId = "userId",
                                 userName = "userName",
                                 comment = userComment,
                                 timestamp = System.currentTimeMillis(),
@@ -390,7 +389,7 @@ fun SlopeDetails(
                     color = colorResource(id = R.color.orange)
                 )
             } else {
-                messages.forEach { comment ->
+                messages.asReversed().forEach { comment ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -699,7 +698,6 @@ fun LiftDetails(
                     IconButton(
                         onClick = {
                             val newMessage = Message(
-                                userId = "userId",
                                 userName = "userName",
                                 comment = commentaire,
                                 timestamp = System.currentTimeMillis(),
