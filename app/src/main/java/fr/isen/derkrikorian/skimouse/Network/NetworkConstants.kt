@@ -7,5 +7,6 @@ class NetworkConstants {
     companion object {
         val COMMENTS_DB = Firebase.database.getReference("comments")
         val LIVECHAT_DB = Firebase.database.getReference("messages")
+        val USERS_DB = Firebase.database.getReference("users")
     }
 }

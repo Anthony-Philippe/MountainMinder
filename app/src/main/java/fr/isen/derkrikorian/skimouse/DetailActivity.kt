@@ -69,6 +69,7 @@ import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.Network.Message
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
+import fr.isen.derkrikorian.skimouse.Network.User
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 import java.util.Locale
@@ -182,9 +183,22 @@ fun SlopeDetails(
     fun writeComment(message: Message, slopeName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
-            val username = extractUsername(it.email ?: "")
-            val commentWithUsername = message.copy(userName = username, slopeName = slopeName)
-            commentsRef.push().setValue(commentWithUsername)
+            val userId = it.uid
+            val commentsRef = NetworkConstants.COMMENTS_DB
+            val usersRef = NetworkConstants.USERS_DB
+
+            usersRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val userData = dataSnapshot.getValue(User::class.java)
+                    val username = userData?.username ?: ""
+                    val commentWithUsername = message.copy(userName = username, slopeName = slopeName)
+                    commentsRef.push().setValue(commentWithUsername)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle error
+                }
+            })
         }
     }
 
@@ -352,14 +366,16 @@ fun SlopeDetails(
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newMessage = Message(
-                                userName = "userName",
-                                comment = userComment,
-                                timestamp = System.currentTimeMillis(),
-                                rating = rating
-                            )
-                            writeComment(newMessage, name)
-                            userComment = ""
+                            if (rating > 0 || userComment.isNotEmpty()) {
+                                val newMessage = Message(
+                                    userName = "userName",
+                                    comment = userComment,
+                                    timestamp = System.currentTimeMillis(),
+                                    rating = rating
+                                )
+                                writeComment(newMessage, name)
+                                userComment = ""
+                            }
                         }
                     ) {
                         Icon(
@@ -455,7 +471,7 @@ fun LiftDetails(
     val context = LocalContext.current
     var openState by remember { mutableStateOf(liftIsOpen) }
 
-    var commentaire by remember { mutableStateOf("") }
+    var userComment by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(0) }
 
     val messages = remember { mutableStateListOf<Message>() }
@@ -482,9 +498,22 @@ fun LiftDetails(
     fun writeComment(message: Message, liftName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
-            val username = extractUsername(it.email ?: "")
-            val commentWithUsername = message.copy(userName = username, liftName = liftName)
-            commentsRef.push().setValue(commentWithUsername)
+            val userId = it.uid
+            val commentsRef = NetworkConstants.COMMENTS_DB
+            val usersRef = NetworkConstants.USERS_DB
+
+            usersRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val userData = dataSnapshot.getValue(User::class.java)
+                    val username = userData?.username ?: ""
+                    val commentWithUsername = message.copy(userName = username, liftName = liftName)
+                    commentsRef.push().setValue(commentWithUsername)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Gérer l'erreur
+                }
+            })
         }
     }
 
@@ -677,8 +706,8 @@ fun LiftDetails(
             }
 
             OutlinedTextField(
-                value = commentaire,
-                onValueChange = { commentaire = it },
+                value = userComment,
+                onValueChange = { userComment = it },
                 label = { Text(text = stringResource(id = R.string.log_form4)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -697,14 +726,16 @@ fun LiftDetails(
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            val newMessage = Message(
-                                userName = "userName",
-                                comment = commentaire,
-                                timestamp = System.currentTimeMillis(),
-                                rating = rating
-                            )
-                            writeComment(newMessage, name)
-                            commentaire = ""
+                            if (rating > 0 || userComment.isNotEmpty()) {
+                                val newMessage = Message(
+                                    userName = "userName",
+                                    comment = userComment,
+                                    timestamp = System.currentTimeMillis(),
+                                    rating = rating
+                                )
+                                writeComment(newMessage, name)
+                                userComment = ""
+                            }
                         }
                     ) {
                         Icon(

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -67,6 +68,7 @@ class LogActivity : ComponentActivity() {
 }
 
 enum class StringResource(val value: Int) {
+    LOG_FORM_0(R.string.log_form0),
     LOG_FORM_1(R.string.log_form1),
     LOG_FORM_2(R.string.log_form2),
     LOG_FORM_3(R.string.log_form3),
@@ -116,6 +118,15 @@ fun LogView() {
                     labelId = StringResource.LOG_FORM_1.value,
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (!isLogin) {
+                    CustomOutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        leadingIcon = Icons.Default.Person,
+                        labelId = StringResource.LOG_FORM_0.value,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 CustomOutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -217,8 +228,6 @@ fun userAuthentication(
                     Log.d(TAG, "signInWithEmail:success")
                     val currentUser = auth.currentUser
                     currentUser?.let {
-                        val userEmail = it.email ?: ""
-                        val username = extractUsername(userEmail)
                         startMainActivity(context)
                     }
                 } else {
@@ -231,7 +240,7 @@ fun userAuthentication(
                 }
             }
     } else {
-        if (password == passwordConfirmation) {
+        if (password == passwordConfirmation && username.isNotEmpty()) {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context as Activity) { task ->
                     if (task.isSuccessful) {
@@ -242,7 +251,7 @@ fun userAuthentication(
                             val usersRef = database.getReference("users")
                             val userData = mapOf(
                                 "email" to email,
-                                "uid" to uid,
+                                "username" to username
                             )
                             usersRef.child(uid).setValue(userData)
                         }
