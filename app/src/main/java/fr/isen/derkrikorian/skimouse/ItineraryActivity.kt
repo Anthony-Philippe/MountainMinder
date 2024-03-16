@@ -37,8 +37,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
+
+val slopeReference = NetworkConstants.SLOPES_DB
+val liftsReference = NetworkConstants.LIFTS_DB
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class ItineraryActivity : ComponentActivity() {
@@ -56,7 +60,6 @@ class ItineraryActivity : ComponentActivity() {
                         }
                     ) {
                         ItineraryView()
-                        ItineraryDetails()
                     }
                 }
             }
@@ -68,6 +71,7 @@ class ItineraryActivity : ComponentActivity() {
 fun ItineraryView() {
     var departInput by remember { mutableStateOf("") }
     var destinationInput by remember { mutableStateOf("") }
+    var showItineraries by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -109,7 +113,14 @@ fun ItineraryView() {
         )
 
         Button(
-            onClick = { },
+            onClick = {
+                if (departInput.isNotEmpty() && destinationInput.isNotEmpty()) {
+                    showItineraries = true
+                }
+                else {
+                    showItineraries = false
+                }
+            },
             modifier = Modifier
                 .align(Alignment.End)
                 .height(35.dp),
@@ -118,36 +129,48 @@ fun ItineraryView() {
         ) {
             Text("Rechercher")
         }
+
+        var departOutput = departInput
+        var destinationOutput = destinationInput
+
+        if (departInput.isEmpty()) {
+            departOutput = "Non spécifié"
+        }
+        if (destinationInput.isEmpty()) {
+            destinationOutput = "Non spécifiée"
+        }
+
+        Column(
+            modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row {
+                Text("Départ → ")
+                Text(departOutput, color = colorResource(id = R.color.orange))
+            }
+            Row {
+                Text("Destination → ")
+                Text(destinationOutput, color = colorResource(id = R.color.orange))
+            }
+        }
+    }
+
+    if (showItineraries) {
+        ItineraryDetails(departInput = departInput, destinationInput = destinationInput)
     }
 }
 
 @Composable
-fun ItineraryDetails(modifier: Modifier = Modifier) {
-    var nbTrajet by remember { mutableIntStateOf(0) }
-    var departInput by remember { mutableStateOf("") }
-    var destinationInput by remember { mutableStateOf("") }
-
-    if (departInput.isEmpty()) {
-        departInput = "Non spécifié"
-    }
-    if (destinationInput.isEmpty()) {
-        destinationInput = "Non spécifiée"
-    }
+fun ItineraryDetails(modifier: Modifier = Modifier, departInput: String, destinationInput: String) {
+    val possibleItineraries = findItinerary(departInput, destinationInput)
+    var nbTrajet by remember { mutableIntStateOf(possibleItineraries.size) }
 
     LazyColumn(
-        modifier = modifier.padding(top = 250.dp),
+        modifier = modifier.padding(top = 300.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Row {
-                    Text("Départ → ")
-                    Text(departInput, color = colorResource(id = R.color.orange))
-                }
-                Row {
-                    Text("Destination → ")
-                    Text(destinationInput, color = colorResource(id = R.color.orange))
-                }
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -166,8 +189,8 @@ fun ItineraryDetails(modifier: Modifier = Modifier) {
             if (nbTrajet == 0) {
                 Text("Aucun trajet trouvé", modifier = Modifier.padding(start = 20.dp), color = colorResource(id = R.color.orange))
             } else {
-                repeat(nbTrajet) { numeroTrajet ->
-                    ItineraryItem(listOf("Point1", "Point2", "Point3", "Point4", "Point5"), numeroTrajet + 1)
+                possibleItineraries.forEachIndexed { index, itinerary ->
+                    ItineraryItem(itinerary, index + 1)
                 }
             }
         }
@@ -196,4 +219,44 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
         }
         Text("\uD83D\uDEA9")
     }
+}
+
+fun findItinerary(depart: String, destination: String): List<List<String>> {
+    val itineraries = mutableListOf<List<String>>()
+    val availableLifts = findAvailableLifts(depart)
+
+    for (lift in availableLifts) {
+        val availableSlopes = findAvailableSlopes(lift)
+
+        for (slope in availableSlopes) {
+            val itinerary = mutableListOf<String>()
+            itinerary.add(lift)
+            itinerary.add(slope)
+            itinerary.add(destination)
+            itineraries.add(itinerary)
+        }
+    }
+
+    return itineraries
+}
+
+fun findAvailableLifts(depart: String): List<String> {
+    val lifts = mutableListOf<String>()
+    val availableLifts = listOf("Télécabine")
+
+    for (lift in availableLifts) {
+        lifts.add(lift)
+    }
+
+    return lifts
+}
+
+fun findAvailableSlopes(depart: String): List<String> {
+    val slopes = mutableListOf<String>()
+    val availableSlopes = listOf("Piste verte", "Piste bleue", "Piste rouge", "Piste noire")
+    for (slope in availableSlopes) {
+        slopes.add(slope)
+    }
+
+    return slopes
 }
