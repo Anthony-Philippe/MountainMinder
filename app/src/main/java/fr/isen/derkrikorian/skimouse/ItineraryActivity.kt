@@ -37,6 +37,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
@@ -116,8 +119,7 @@ fun ItineraryView() {
             onClick = {
                 if (departInput.isNotEmpty() && destinationInput.isNotEmpty()) {
                     showItineraries = true
-                }
-                else {
+                } else {
                     showItineraries = false
                 }
             },
@@ -141,7 +143,9 @@ fun ItineraryView() {
         }
 
         Column(
-            modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.Start
         ) {
             Row {
@@ -187,7 +191,11 @@ fun ItineraryDetails(modifier: Modifier = Modifier, departInput: String, destina
         }
         item {
             if (nbTrajet == 0) {
-                Text("Aucun trajet trouvé", modifier = Modifier.padding(start = 20.dp), color = colorResource(id = R.color.orange))
+                Text(
+                    "Aucun trajet trouvé",
+                    modifier = Modifier.padding(start = 20.dp),
+                    color = colorResource(id = R.color.orange)
+                )
             } else {
                 possibleItineraries.forEachIndexed { index, itinerary ->
                     ItineraryItem(itinerary, index + 1)
@@ -203,14 +211,18 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
         return
     }
 
-    Text("Trajet $numeroTrajet", modifier = Modifier.padding(start = 20.dp), color = colorResource(id = R.color.orange))
+    Text(
+        "Trajet $numeroTrajet",
+        modifier = Modifier.padding(start = 20.dp),
+        color = colorResource(id = R.color.orange)
+    )
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
             .padding(start = 20.dp, bottom = 15.dp)
     ) {
         liste1.forEach { item ->
-            if (item != liste1.first()){
+            if (item != liste1.first()) {
                 Text(" →", color = colorResource(id = R.color.orange))
             }
             Text(
@@ -223,40 +235,78 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
 
 fun findItinerary(depart: String, destination: String): List<List<String>> {
     val itineraries = mutableListOf<List<String>>()
-    val availableLifts = findAvailableLifts(depart)
+    exploreItinerary(depart, destination, mutableListOf(), itineraries)
+    return itineraries
+}
 
-    for (lift in availableLifts) {
-        val availableSlopes = findAvailableSlopes(lift)
-
-        for (slope in availableSlopes) {
-            val itinerary = mutableListOf<String>()
-            itinerary.add(lift)
-            itinerary.add(slope)
-            itinerary.add(destination)
-            itineraries.add(itinerary)
-        }
+fun exploreItinerary(
+    currentLocation: String,
+    destination: String,
+    currentPath: MutableList<String>,
+    allItineraries: MutableList<List<String>>,
+    depth: Int = 0,
+    maxDepth: Int = 5
+) {
+    if (currentLocation == destination) {
+        allItineraries.add(currentPath.toList())
+        return
     }
 
-    return itineraries
+    if (depth >= maxDepth) {
+        return
+    }
+
+    val availableConnections = if (isLift(currentLocation)) {
+        findAvailableSlopes(currentLocation)
+    } else {
+        findAvailableLifts(currentLocation)
+    }
+
+    for (connection in availableConnections) {
+        currentPath.add(connection)
+        exploreItinerary(connection, destination, currentPath, allItineraries, depth + 1, maxDepth)
+        currentPath.removeAt(currentPath.size - 1)
+    }
+}
+
+fun isLift(location: String): Boolean {
+    return location.startsWith("L")
 }
 
 fun findAvailableLifts(depart: String): List<String> {
     val lifts = mutableListOf<String>()
-    val availableLifts = listOf("Télécabine")
 
-    for (lift in availableLifts) {
-        lifts.add(lift)
-    }
+    liftsReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            for (liftSnapshot in snapshot.children) {
+                val liftName = liftSnapshot.child("name").value.toString()
+                lifts.add(liftName)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Gérer l'erreur
+        }
+    })
 
     return lifts
 }
 
 fun findAvailableSlopes(depart: String): List<String> {
     val slopes = mutableListOf<String>()
-    val availableSlopes = listOf("Piste verte", "Piste bleue", "Piste rouge", "Piste noire")
-    for (slope in availableSlopes) {
-        slopes.add(slope)
-    }
+
+    slopeReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            for (slopeSnapshot in snapshot.children) {
+                val slopeName = slopeSnapshot.child("name").value.toString()
+                slopes.add(slopeName)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Gérer l'erreur
+        }
+    })
 
     return slopes
 }
