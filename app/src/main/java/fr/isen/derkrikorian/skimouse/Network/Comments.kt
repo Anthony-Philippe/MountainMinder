@@ -1,6 +1,6 @@
 package fr.isen.derkrikorian.skimouse.Network
 
-data class Message(
+data class Comments(
     val userName: String = "",
     val comment: String = "",
     val timestamp: Long = 0,

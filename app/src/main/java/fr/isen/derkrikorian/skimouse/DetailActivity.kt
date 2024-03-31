@@ -66,7 +66,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import fr.isen.derkrikorian.skimouse.Network.Message
+import fr.isen.derkrikorian.skimouse.Network.Comments
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.Network.SlopeDifficulty
 import fr.isen.derkrikorian.skimouse.Network.User
@@ -159,20 +159,20 @@ fun SlopeDetails(
     var userComment by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(0) }
 
-    val messages = remember { mutableStateListOf<Message>() }
+    val comments = remember { mutableStateListOf<Comments>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newMessages = mutableListOf<Message>()
+            val newComments = mutableListOf<Comments>()
             for (childSnapshot in snapshot.children) {
-                val message = childSnapshot.getValue(Message::class.java)
-                message?.let {
+                val comment = childSnapshot.getValue(Comments::class.java)
+                comment?.let {
                     if (it.slopeName == name) {
-                        newMessages.add(it)
+                        newComments.add(it)
                     }
                 }
             }
-            messages.clear()
-            messages.addAll(newMessages)
+            comments.clear()
+            comments.addAll(newComments)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -180,7 +180,7 @@ fun SlopeDetails(
         }
     })
 
-    fun writeComment(message: Message, slopeName: String) {
+    fun writeComment(comment: Comments, slopeName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val userId = it.uid
@@ -191,7 +191,7 @@ fun SlopeDetails(
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val userData = dataSnapshot.getValue(User::class.java)
                     val username = userData?.username ?: ""
-                    val commentWithUsername = message.copy(userName = username, slopeName = slopeName)
+                    val commentWithUsername = comment.copy(userName = username, slopeName = slopeName)
                     commentsRef.push().setValue(commentWithUsername)
                 }
 
@@ -367,13 +367,13 @@ fun SlopeDetails(
                     IconButton(
                         onClick = {
                             if (rating > 0 || userComment.isNotEmpty()) {
-                                val newMessage = Message(
+                                val newComments = Comments(
                                     userName = "userName",
                                     comment = userComment,
                                     timestamp = System.currentTimeMillis(),
                                     rating = rating
                                 )
-                                writeComment(newMessage, name)
+                                writeComment(newComments, name)
                                 userComment = ""
                             }
                         }
@@ -394,7 +394,7 @@ fun SlopeDetails(
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
             )
 
-            if (messages.isEmpty()) {
+            if (comments.isEmpty()) {
                 Text(
                     text = "Aucun avis sur cette piste",
                     fontSize = 16.sp,
@@ -405,7 +405,7 @@ fun SlopeDetails(
                     color = colorResource(id = R.color.orange)
                 )
             } else {
-                messages.asReversed().forEach { comment ->
+                comments.asReversed().forEach { comment ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -466,7 +466,7 @@ fun LiftDetails(
     modifier: Modifier = Modifier,
     id: Int
 ) {
-    val liftsReference = FirebaseDatabase.getInstance().getReference("lifts")
+    val liftsReference = NetworkConstants.LIFTS_DB
     val liftReference = liftsReference.child(id.toString())
     val context = LocalContext.current
     var openState by remember { mutableStateOf(liftIsOpen) }
@@ -474,20 +474,20 @@ fun LiftDetails(
     var userComment by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(0) }
 
-    val messages = remember { mutableStateListOf<Message>() }
+    val comments = remember { mutableStateListOf<Comments>() }
     commentsRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            val newMessages = mutableListOf<Message>()
+            val newComments = mutableListOf<Comments>()
             for (childSnapshot in snapshot.children) {
-                val message = childSnapshot.getValue(Message::class.java)
+                val message = childSnapshot.getValue(Comments::class.java)
                 message?.let {
                     if (it.liftName == name) {
-                        newMessages.add(it)
+                        newComments.add(it)
                     }
                 }
             }
-            messages.clear()
-            messages.addAll(newMessages)
+            comments.clear()
+            comments.addAll(newComments)
         }
 
         override fun onCancelled(error: DatabaseError) {
@@ -495,7 +495,7 @@ fun LiftDetails(
         }
     })
 
-    fun writeComment(message: Message, liftName: String) {
+    fun writeComment(comment: Comments, liftName: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
             val userId = it.uid
@@ -506,7 +506,7 @@ fun LiftDetails(
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val userData = dataSnapshot.getValue(User::class.java)
                     val username = userData?.username ?: ""
-                    val commentWithUsername = message.copy(userName = username, liftName = liftName)
+                    val commentWithUsername = comment.copy(userName = username, liftName = liftName)
                     commentsRef.push().setValue(commentWithUsername)
                 }
 
@@ -727,13 +727,13 @@ fun LiftDetails(
                     IconButton(
                         onClick = {
                             if (rating > 0 || userComment.isNotEmpty()) {
-                                val newMessage = Message(
+                                val newComments = Comments(
                                     userName = "userName",
                                     comment = userComment,
                                     timestamp = System.currentTimeMillis(),
                                     rating = rating
                                 )
-                                writeComment(newMessage, name)
+                                writeComment(newComments, name)
                                 userComment = ""
                             }
                         }
@@ -754,7 +754,7 @@ fun LiftDetails(
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 8.dp)
             )
 
-            if (messages.isEmpty()) {
+            if (comments.isEmpty()) {
                 Text(
                     text = "Aucun avis sur cette remontée",
                     fontSize = 16.sp,
@@ -765,7 +765,7 @@ fun LiftDetails(
                     color = colorResource(id = R.color.orange)
                 )
             } else {
-                messages.forEach { comment ->
+                comments.forEach { comment ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -818,7 +818,7 @@ fun LiftDetails(
 }
 
 fun fetchSlopeDetails(slopeName: String, context: Context) {
-    val slopesReference = FirebaseDatabase.getInstance().getReference("slopes")
+    val slopesReference = NetworkConstants.SLOPES_DB
 
     slopesReference.addListenerForSingleValueEvent(object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {

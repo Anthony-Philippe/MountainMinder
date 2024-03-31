@@ -37,8 +37,15 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
+
+val slopeReference = NetworkConstants.SLOPES_DB
+val liftsReference = NetworkConstants.LIFTS_DB
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class ItineraryActivity : ComponentActivity() {
@@ -56,7 +63,6 @@ class ItineraryActivity : ComponentActivity() {
                         }
                     ) {
                         ItineraryView()
-                        ItineraryDetails()
                     }
                 }
             }
@@ -68,6 +74,7 @@ class ItineraryActivity : ComponentActivity() {
 fun ItineraryView() {
     var departInput by remember { mutableStateOf("") }
     var destinationInput by remember { mutableStateOf("") }
+    var showItineraries by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -109,7 +116,13 @@ fun ItineraryView() {
         )
 
         Button(
-            onClick = { },
+            onClick = {
+                if (departInput.isNotEmpty() && destinationInput.isNotEmpty()) {
+                    showItineraries = true
+                } else {
+                    showItineraries = false
+                }
+            },
             modifier = Modifier
                 .align(Alignment.End)
                 .height(35.dp),
@@ -118,36 +131,50 @@ fun ItineraryView() {
         ) {
             Text("Rechercher")
         }
+
+        var departOutput = departInput
+        var destinationOutput = destinationInput
+
+        if (departInput.isEmpty()) {
+            departOutput = "Non spécifié"
+        }
+        if (destinationInput.isEmpty()) {
+            destinationOutput = "Non spécifiée"
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row {
+                Text("Départ → ")
+                Text(departOutput, color = colorResource(id = R.color.orange))
+            }
+            Row {
+                Text("Destination → ")
+                Text(destinationOutput, color = colorResource(id = R.color.orange))
+            }
+        }
+    }
+
+    if (showItineraries) {
+        ItineraryDetails(departInput = departInput, destinationInput = destinationInput)
     }
 }
 
 @Composable
-fun ItineraryDetails(modifier: Modifier = Modifier) {
-    var nbTrajet by remember { mutableIntStateOf(0) }
-    var departInput by remember { mutableStateOf("") }
-    var destinationInput by remember { mutableStateOf("") }
-
-    if (departInput.isEmpty()) {
-        departInput = "Non spécifié"
-    }
-    if (destinationInput.isEmpty()) {
-        destinationInput = "Non spécifiée"
-    }
+fun ItineraryDetails(modifier: Modifier = Modifier, departInput: String, destinationInput: String) {
+    val possibleItineraries = findItinerary(departInput, destinationInput)
+    var nbTrajet by remember { mutableIntStateOf(possibleItineraries.size) }
 
     LazyColumn(
-        modifier = modifier.padding(top = 250.dp),
+        modifier = modifier.padding(top = 300.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Row {
-                    Text("Départ → ")
-                    Text(departInput, color = colorResource(id = R.color.orange))
-                }
-                Row {
-                    Text("Destination → ")
-                    Text(destinationInput, color = colorResource(id = R.color.orange))
-                }
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -164,10 +191,14 @@ fun ItineraryDetails(modifier: Modifier = Modifier) {
         }
         item {
             if (nbTrajet == 0) {
-                Text("Aucun trajet trouvé", modifier = Modifier.padding(start = 20.dp), color = colorResource(id = R.color.orange))
+                Text(
+                    "Aucun trajet trouvé",
+                    modifier = Modifier.padding(start = 20.dp),
+                    color = colorResource(id = R.color.orange)
+                )
             } else {
-                repeat(nbTrajet) { numeroTrajet ->
-                    ItineraryItem(listOf("Point1", "Point2", "Point3", "Point4", "Point5"), numeroTrajet + 1)
+                possibleItineraries.forEachIndexed { index, itinerary ->
+                    ItineraryItem(itinerary, index + 1)
                 }
             }
         }
@@ -180,14 +211,18 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
         return
     }
 
-    Text("Trajet $numeroTrajet", modifier = Modifier.padding(start = 20.dp), color = colorResource(id = R.color.orange))
+    Text(
+        "Trajet $numeroTrajet",
+        modifier = Modifier.padding(start = 20.dp),
+        color = colorResource(id = R.color.orange)
+    )
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
             .padding(start = 20.dp, bottom = 15.dp)
     ) {
         liste1.forEach { item ->
-            if (item != liste1.first()){
+            if (item != liste1.first()) {
                 Text(" →", color = colorResource(id = R.color.orange))
             }
             Text(
@@ -196,4 +231,82 @@ fun ItineraryItem(liste1: List<String>, numeroTrajet: Int) {
         }
         Text("\uD83D\uDEA9")
     }
+}
+
+fun findItinerary(depart: String, destination: String): List<List<String>> {
+    val itineraries = mutableListOf<List<String>>()
+    exploreItinerary(depart, destination, mutableListOf(), itineraries)
+    return itineraries
+}
+
+fun exploreItinerary(
+    currentLocation: String,
+    destination: String,
+    currentPath: MutableList<String>,
+    allItineraries: MutableList<List<String>>,
+    depth: Int = 0,
+    maxDepth: Int = 5
+) {
+    if (currentLocation == destination) {
+        allItineraries.add(currentPath.toList())
+        return
+    }
+
+    if (depth >= maxDepth) {
+        return
+    }
+
+    val availableConnections = if (isLift(currentLocation)) {
+        findAvailableSlopes(currentLocation)
+    } else {
+        findAvailableLifts(currentLocation)
+    }
+
+    for (connection in availableConnections) {
+        currentPath.add(connection)
+        exploreItinerary(connection, destination, currentPath, allItineraries, depth + 1, maxDepth)
+        currentPath.removeAt(currentPath.size - 1)
+    }
+}
+
+fun isLift(location: String): Boolean {
+    return location.startsWith("L")
+}
+
+fun findAvailableLifts(depart: String): List<String> {
+    val lifts = mutableListOf<String>()
+
+    liftsReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            for (liftSnapshot in snapshot.children) {
+                val liftName = liftSnapshot.child("name").value.toString()
+                lifts.add(liftName)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Gérer l'erreur
+        }
+    })
+
+    return lifts
+}
+
+fun findAvailableSlopes(depart: String): List<String> {
+    val slopes = mutableListOf<String>()
+
+    slopeReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            for (slopeSnapshot in snapshot.children) {
+                val slopeName = slopeSnapshot.child("name").value.toString()
+                slopes.add(slopeName)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            // Gérer l'erreur
+        }
+    })
+
+    return slopes
 }

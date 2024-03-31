@@ -1,6 +1,7 @@
 *.iml
 .gradle
 .idea
+.idea/*
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -17,3 +18,4 @@ local.properties
 .idea/deploymentTargetDropDown.xml
 .idea/gradle.xml
 build.gradle.kts
+/.idea
