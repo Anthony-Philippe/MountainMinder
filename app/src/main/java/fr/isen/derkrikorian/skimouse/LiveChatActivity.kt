@@ -45,6 +45,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import fr.isen.derkrikorian.skimouse.Network.MessageChat
 import fr.isen.derkrikorian.skimouse.Network.NetworkConstants
+import fr.isen.derkrikorian.skimouse.Network.User
 import fr.isen.derkrikorian.skimouse.composables.Navbar
 import fr.isen.derkrikorian.skimouse.ui.theme.SkiMouseTheme
 
@@ -76,6 +77,7 @@ class LiveChatActivity : ComponentActivity() {
 @Composable
 fun LiveChatView(modifier: Modifier = Modifier) {
     val chats = remember { mutableStateListOf<MessageChat>() }
+    var userChat by remember { mutableStateOf("") }
     chatMessagesRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             val newChat = mutableListOf<MessageChat>()
@@ -95,18 +97,25 @@ fun LiveChatView(modifier: Modifier = Modifier) {
     })
 
     val currentUser = FirebaseAuth.getInstance().currentUser
-    val username = extractUsername(currentUser?.email ?: "")
     fun writeChat(chat: MessageChat) {
-        if (chat.comment.isBlank()) return
-        val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
-            val username = extractUsername(it.email ?: "")
-            val commentWithUsername = chat.copy(userName = username)
-            chatMessagesRef.push().setValue(commentWithUsername)
+            val userId = it.uid
+            val messagesRef = chatMessagesRef
+            val usersRef = NetworkConstants.USERS_DB
+
+            usersRef.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val userData = dataSnapshot.getValue(User::class.java)
+                    val username = userData?.username ?: ""
+                    val commentWithUsername = chat.copy(userName = username)
+                    messagesRef.push().setValue(commentWithUsername)
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle error
+                }
+            })
         }
     }
-
-    var userChat by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -119,7 +128,7 @@ fun LiveChatView(modifier: Modifier = Modifier) {
         ) {
             item {
                 chats.asReversed().forEach { chat ->
-                    val isUserMessage = chat.userName == username
+                    val isUserMessage = chat.userName == "Anthony83"
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = if (isUserMessage) {
