@@ -2,7 +2,7 @@
 
 ### _Application Android de Station de ski_
 
-Réalisation d'une application de **gestion de ski** en utilisant **firebase**.
+Réalisation d'une application de **gestion de station de ski** en utilisant **firebase**.
 
 Utilisation d'une `realtime database`
 
