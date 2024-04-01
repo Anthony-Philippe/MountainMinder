@@ -6,15 +6,22 @@ Réalisation d'une application de **gestion de ski** en utilisant **firebase**.
 
 Utilisation d'une `realtime database`
 
-Version `APK`, adapté pour écran de `Pixel 3` 
+Version `APK` signé. Application adaptée pour écran de `Pixel 3` 
 
 - Authentification
 	- Inscription (Email, Password + Username)
 	- Connexion
-- Liste des pistes de ski et des remontées
+- Liste des pistes de ski et des remontées mécaniques
+	- Barre de recherche (Par nom)
+    - Trié par difficulté (couleur de piste)
 - Page de détails (niveau, état, pistes desservies..)
-- Espace commentaire
+    - Espace commentaires
+    - Note (1 à 5 étoiles)
+    - Signaler un changement d'état (Ouverture, Fermeture)
+    - Piste desservie par des remontées mécaniques
 - Live chat
+	- Chat en temps réel
+	- Visualisation de ses messages envoyés
 - Trajet (Point de départ vers un point d'arrivé)
 
 > Les trajets ne sont pas fonctionnelles /!\
